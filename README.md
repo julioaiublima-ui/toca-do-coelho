@@ -2,14 +2,6 @@
 
 Interface de uma plataforma de RPG paranormal inspirada em fichas de personagem, com campanha, rituais e mesa virtual.
 
-> **CARIMBO DO PROJETO**
->
-> **JULIO THIAGO COLARES DE LIMA**
->
-> Dedicação · Conhecimento · Honestidade
->
-> Ciência da computação · TDAH · Foco · Disciplina
-
 ![Carimbo de Julio Thiago Colares de Lima](src/assets/carimbo.jpeg)
 
 ## O que já funciona
