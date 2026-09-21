@@ -10,6 +10,8 @@ Interface de uma plataforma de RPG paranormal inspirada em fichas de personagem,
 >
 > Ciência da computação · TDAH · Foco · Disciplina
 
+![Carimbo de Julio Thiago Colares de Lima](src/assets/carimbo.jpeg)
+
 ## O que já funciona
 
 - Dashboard da campanha com acesso rápido à ficha, rituais e mesa.
