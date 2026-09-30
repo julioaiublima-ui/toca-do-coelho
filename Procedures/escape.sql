@@ -1,0 +1,6 @@
+CREATE PROCEDURE escape
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+END
