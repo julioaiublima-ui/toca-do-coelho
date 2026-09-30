@@ -1,53 +1,81 @@
 import { useMemo, useState } from 'react'
-import stampImage from './assets/carimbo.jpeg'
 import './App.css'
 
-type View = 'overview' | 'sheet' | 'rituals' | 'table'
-type Ritual = { name: string; circle: string; element: string; description: string; color: string }
-const initialRituals: Ritual[] = [
-  { name: 'Ouvir os sussurros', circle: '1º círculo', element: 'Conhecimento', description: 'Você toca uma superfície e escuta os últimos sons deixados nela.', color: 'gold' },
-  { name: 'Amaldiçoar arma', circle: '2º círculo', element: 'Morte', description: 'A matéria ao redor da arma se corrompe, causando dano adicional.', color: 'purple' },
-  { name: 'Cinerária', circle: '2º círculo', element: 'Energia', description: 'Uma nuvem de cinzas ocupa o espaço e esconde seus aliados.', color: 'blue' },
-  { name: 'Paralisia', circle: '3º círculo', element: 'Sangue', description: 'O alvo sente seus músculos travarem sob uma ordem impossível.', color: 'red' },
+type Section = 'system' | 'agents' | 'campaigns' | 'threats' | 'homebrew'
+type ContentType = 'Habilidade' | 'Arma' | 'Ameaça' | 'Ritual' | 'Item'
+type Entry = { id: number; type: ContentType; name: string; subtitle: string; detail: string; tag: string; accent: string }
+
+const initialEntries: Entry[] = [
+  { id: 1, type: 'Habilidade', name: 'Reflexos Defensivos', subtitle: 'Especialista · Reação', detail: 'Quando a ameaça se aproxima, você aprende a desaparecer antes do impacto.', tag: 'PASSIVA', accent: 'lime' },
+  { id: 2, type: 'Ritual', name: 'Ouvir os sussurros', subtitle: 'Conhecimento · 1º círculo', detail: 'Você toca uma superfície e escuta os últimos sons deixados nela.', tag: 'RITUAL', accent: 'violet' },
+  { id: 3, type: 'Arma', name: 'Pistola do investigador', subtitle: 'Fogo · 1d12', detail: 'Uma arma compacta, marcada por uma inscrição quase apagada.', tag: 'EQUIPAMENTO', accent: 'amber' },
+  { id: 4, type: 'Ameaça', name: 'O Homem do Poço', subtitle: 'Criatura · VD 45', detail: 'Ele não caça pessoas. Caça aquilo que elas tentam esquecer.', tag: 'AMEAÇA', accent: 'red' },
+  { id: 5, type: 'Item', name: 'Fita cassete 07', subtitle: 'Investigação · Evidência', detail: 'A gravação termina com três batidas. A quarta sempre acontece atrás de você.', tag: 'EVIDÊNCIA', accent: 'blue' },
 ]
 
+const sectionInfo: Record<Section, { eyebrow: string; title: string; description: string }> = {
+  system: { eyebrow: 'CENTRO DE CONTROLE', title: 'Sistema', description: 'Regras, compêndios e atualizações para manter a mesa no mesmo ritmo.' },
+  agents: { eyebrow: 'ARQUIVO DE CAMPO', title: 'Agentes', description: 'As pessoas que continuam investigando mesmo quando já deveriam ter ido embora.' },
+  campaigns: { eyebrow: 'DOSSIÊS ATIVOS', title: 'Campanhas', description: 'Suas histórias, pistas e sessões organizadas em um só lugar.' },
+  threats: { eyebrow: 'NÍVEL DE RISCO', title: 'Ameaças', description: 'O catálogo de coisas que observam de volta quando você olha para o escuro.' },
+  homebrew: { eyebrow: 'OFICINA DO MESTRE', title: 'Homebrew', description: 'Crie conteúdo, ajuste a experiência e dê uma assinatura à sua campanha.' },
+}
+
 function App() {
-  const [view, setView] = useState<View>('overview')
-  const [rituals, setRituals] = useState(initialRituals)
-  const [search, setSearch] = useState('')
+  const [section, setSection] = useState<Section>('system')
+  const [entries, setEntries] = useState(initialEntries)
+  const [filter, setFilter] = useState('Todos')
+  const [query, setQuery] = useState('')
   const [showModal, setShowModal] = useState(false)
-  const [selectedToken, setSelectedToken] = useState('Evelyn')
-  const [roll, setRoll] = useState<number | null>(null)
-  const [newRitual, setNewRitual] = useState({ name: '', circle: '1º círculo', element: 'Conhecimento', description: '' })
-  const filteredRituals = useMemo(() => rituals.filter((ritual) => ritual.name.toLowerCase().includes(search.toLowerCase()) || ritual.element.toLowerCase().includes(search.toLowerCase())), [rituals, search])
-  const navigation: { id: View; label: string; icon: string }[] = [
-    { id: 'overview', label: 'Santuário', icon: '⌂' }, { id: 'sheet', label: 'Minha ficha', icon: '◈' },
-    { id: 'rituals', label: 'Rituais', icon: '✦' }, { id: 'table', label: 'Mesa virtual', icon: '▦' },
-  ]
-  function addRitual(event: React.FormEvent<HTMLFormElement>) {
+  const [apiStatus, setApiStatus] = useState('API pronta')
+  const [newEntry, setNewEntry] = useState({ type: 'Habilidade' as ContentType, name: '', subtitle: '', detail: '' })
+  const info = sectionInfo[section]
+  const visibleEntries = useMemo(() => entries.filter((entry) => (filter === 'Todos' || entry.type === filter) && `${entry.name} ${entry.subtitle}`.toLowerCase().includes(query.toLowerCase())), [entries, filter, query])
+
+  function addEntry(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    if (!newRitual.name.trim()) return
-    setRituals((current) => [...current, { ...newRitual, color: 'gold' }])
-    setNewRitual({ name: '', circle: '1º círculo', element: 'Conhecimento', description: '' })
+    if (!newEntry.name.trim()) return
+    const accents: Record<ContentType, string> = { Habilidade: 'lime', Arma: 'amber', Ameaça: 'red', Ritual: 'violet', Item: 'blue' }
+    setEntries((current) => [{ ...newEntry, id: Date.now(), tag: newEntry.type.toUpperCase(), accent: accents[newEntry.type] }, ...current])
+    setNewEntry({ type: 'Habilidade', name: '', subtitle: '', detail: '' })
     setShowModal(false)
   }
 
-  return (
-    <div className="app-shell">
-      <aside className="sidebar"><div className="brand"><span className="brand-mark">☽</span><span>Toca do<br /><strong>Coelho</strong></span></div><img className="creator-stamp-image" src={stampImage} alt="Carimbo de Julio Thiago Colares de Lima" /><div className="campaign"><span className="eyebrow">CAMPANHA ATIVA</span><strong>O véu entre nós</strong><span>Força Umbra · 4 jogadores</span></div><nav>{navigation.map((item) => <button key={item.id} className={view === item.id ? 'active' : ''} onClick={() => setView(item.id)}><span>{item.icon}</span>{item.label}</button>)}</nav><div className="sidebar-bottom"><button className="admin-link" onClick={() => setView('rituals')}><span>⚙</span> Painel do mestre</button><div className="user-chip"><div className="avatar">EC</div><div><strong>Evelyn Croft</strong><small>Investigadora</small></div><span>•••</span></div></div></aside>
-      <main className="main-content"><header className="topbar"><div className="breadcrumbs">CAMPANHA <span>/</span> <strong>{navigation.find((item) => item.id === view)?.label.toUpperCase()}</strong></div><div className="top-actions"><button className="icon-button" aria-label="Notificações">♧<i /></button><button className="invite-button" onClick={() => setView('table')}>＋ Convidar jogador</button></div></header>
-        {view === 'overview' && <section className="page"><div className="page-heading"><div><span className="eyebrow">DOMINGO, 20 DE SETEMBRO</span><h1>Bem-vindo de volta, Evelyn<span className="gold">.</span></h1><p>O que vamos descobrir hoje?</p></div><button className="primary-button" onClick={() => setView('table')}>Entrar na mesa <span>→</span></button></div><div className="hero-banner"><div><span className="eyebrow gold-text">PRÓXIMA SESSÃO · EM 2 DIAS</span><h2>O chamado da<br /><em>floresta negra</em></h2><p>Capítulo III · A casa onde o silêncio mora</p><button className="banner-button" onClick={() => setView('table')}>Abrir mesa virtual <span>↗</span></button></div><div className="moon-art"><span>☽</span><i>✦</i><b>✧</b></div></div><div className="section-title"><div><span className="eyebrow">ACESSO RÁPIDO</span><h2>Seu santuário</h2></div><button className="text-button" onClick={() => setView('sheet')}>Ver minha ficha →</button></div><div className="quick-grid"><button className="quick-card ritual-card" onClick={() => setView('rituals')}><span className="card-icon">✦</span><span><strong>Biblioteca de rituais</strong><small>{rituals.length} rituais disponíveis para estudar</small></span><b>→</b></button><button className="quick-card map-card" onClick={() => setView('table')}><span className="card-icon">▦</span><span><strong>Mapa da sessão</strong><small>Ruínas de Santa Dália · 4 jogadores online</small></span><b>→</b></button></div><div className="lower-grid"><div className="panel activity"><div className="panel-heading"><div><span className="eyebrow">DIÁRIO DA CAMPANHA</span><h2>Atividade recente</h2></div><button className="text-button">Ver tudo</button></div><div className="activity-row"><span className="activity-dot purple">✦</span><div><strong>O mestre adicionou um novo ritual</strong><small>Paralisia · há 18 minutos</small></div><span>···</span></div><div className="activity-row"><span className="activity-dot gold">▦</span><div><strong>Mapa atualizado na mesa virtual</strong><small>Ruínas de Santa Dália · ontem</small></div><span>···</span></div></div><div className="panel quote"><span className="quote-mark">“</span><p>O medo não está no que se esconde na escuridão, mas no que a escuridão revela sobre nós.</p><small>— Diário do Professor Carvalho</small></div></div></section>}
-        {view === 'sheet' && <section className="page"><div className="page-heading compact"><div><span className="eyebrow">FICHA DE PERSONAGEM</span><h1>Evelyn Hp Croft<span className="gold">.</span></h1><p>Uma investigadora que aprendeu a ouvir o que não foi dito.</p></div><button className="primary-button">Editar ficha <span>✎</span></button></div><div className="character-grid"><div className="character-portrait"><div className="portrait-symbol">EC</div><span>INVESTIGADORA</span><strong>NEX 35%</strong></div><div className="panel stats-panel"><div className="stat-header"><span><small>JOGADOR</small><strong>julio</strong></span><span><small>ORIGEM</small><strong>Investigador</strong></span><span><small>CLASSE</small><strong>Especialista</strong></span></div><div className="stat-bars"><div><label>VIDA <b>32 / 32</b></label><i><em className="health" style={{ width: '88%' }} /></i></div><div><label>ESFORÇO <b>28 / 28</b></label><i><em className="effort" style={{ width: '72%' }} /></i></div><div><label>SANIDADE <b>42 / 50</b></label><i><em className="sanity" style={{ width: '84%' }} /></i></div></div><div className="attributes"><div><b>FOR</b><strong>2</strong></div><div><b>AGI</b><strong>3</strong></div><div><b>INT</b><strong>4</strong></div><div><b>PRE</b><strong>2</strong></div><div><b>VIG</b><strong>3</strong></div></div></div></div><div className="section-title"><div><span className="eyebrow">INVENTÁRIO MÍSTICO</span><h2>Seus rituais preparados</h2></div><button className="text-button" onClick={() => setView('rituals')}>Ver biblioteca →</button></div><div className="ritual-list">{rituals.slice(0, 3).map((ritual) => <RitualItem key={ritual.name} ritual={ritual} />)}</div></section>}
-        {view === 'rituals' && <section className="page"><div className="page-heading compact"><div><span className="eyebrow">CONHECIMENTO ARCANO</span><h1>Biblioteca de rituais<span className="gold">.</span></h1><p>Registre, organize e compartilhe o conhecimento da campanha.</p></div><button className="primary-button" onClick={() => setShowModal(true)}>＋ Novo ritual</button></div><div className="library-toolbar"><div className="search-box">⌕<input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Buscar por nome ou elemento..." /></div><button className="filter-button">Todos os círculos <span>⌄</span></button><span className="result-count">{filteredRituals.length} rituais</span></div><div className="ritual-list full-list">{filteredRituals.map((ritual) => <RitualItem key={ritual.name} ritual={ritual} />)}</div></section>}
-        {view === 'table' && <section className="page table-page"><div className="page-heading compact"><div><span className="eyebrow">MESA VIRTUAL · AO VIVO</span><h1>Ruínas de Santa Dália<span className="gold">.</span></h1><p>Mapa compartilhado · 4 jogadores conectados</p></div><div className="online-list"><span className="online-dot" /> 4 online <button className="primary-button small" onClick={() => setRoll(Math.floor(Math.random() * 20) + 1)}>Rolar d20</button></div></div><div className="table-layout"><div className="map-wrap"><div className="map-toolbar"><span>☷ <strong>Ruínas de Santa Dália</strong></span><span><button>−</button><b>100%</b><button>＋</button></span><span><button>↗</button> Tela cheia</span></div><div className="map-grid"><div className="map-room room-one"><span>Entrada</span></div><div className="map-room room-two"><span>Santuário</span></div><div className="map-room room-three"><span>Biblioteca</span></div><button className={`token token-evelyn ${selectedToken === 'Evelyn' ? 'selected' : ''}`} onClick={() => setSelectedToken('Evelyn')}><span>EC</span><small>Evelyn</small></button><button className={`token token-npc ${selectedToken === 'Aparição' ? 'selected' : ''}`} onClick={() => setSelectedToken('Aparição')}><span>?</span><small>Aparição</small></button><button className="token token-friend"><span>LM</span><small>Lívia</small></button></div><div className="map-footer"><span>▣ Ferramentas</span><span>◉ Grade ativada</span><span className="selected-label">Selecionado: <strong>{selectedToken}</strong></span></div></div><aside className="table-side"><div className="panel chat-panel"><div className="panel-heading"><h2>Registro da mesa</h2><span className="live-badge">AO VIVO</span></div><div className="chat-message"><div className="mini-avatar gold-bg">MC</div><p><strong>Mestre Carvalho</strong><span>Abre a porta devagar...</span><small>20:41</small></p></div><div className="chat-message"><div className="mini-avatar purple-bg">EC</div><p><strong>Você</strong><span>Eu lanço Ouvir os sussurros.</span><small>20:42</small></p></div>{roll && <div className="roll-result"><span>✦</span> Evelyn rolou <strong>d20: {roll}</strong></div>}<div className="chat-input">Diga algo... <span>↗</span></div></div><div className="panel players-panel"><div className="panel-heading"><h2>Jogadores</h2><span>4 / 6</span></div><div className="player-line"><span className="mini-avatar purple-bg">EC</span><strong>Evelyn Croft<small>Você · Investigadora</small></strong><i className="mic">◉</i></div><div className="player-line"><span className="mini-avatar blue-bg">LM</span><strong>Lívia Mendes<small>Especialista</small></strong><i className="mic">◉</i></div><div className="player-line"><span className="mini-avatar gold-bg">MC</span><strong>Mestre Carvalho<small>Mestre</small></strong><i className="mic">◉</i></div></div></aside></div></section>}
-      </main>
-      {showModal && <div className="modal-backdrop" onMouseDown={() => setShowModal(false)}><form className="modal" onSubmit={addRitual} onMouseDown={(event) => event.stopPropagation()}><div className="modal-heading"><div><span className="eyebrow gold-text">PAINEL DO MESTRE</span><h2>Novo ritual</h2></div><button type="button" className="close-button" onClick={() => setShowModal(false)}>×</button></div><label>Nome do ritual<input autoFocus required value={newRitual.name} onChange={(event) => setNewRitual({ ...newRitual, name: event.target.value })} placeholder="Ex: Revelar o oculto" /></label><div className="form-row"><label>Círculo<select value={newRitual.circle} onChange={(event) => setNewRitual({ ...newRitual, circle: event.target.value })}><option>1º círculo</option><option>2º círculo</option><option>3º círculo</option><option>4º círculo</option></select></label><label>Elemento<select value={newRitual.element} onChange={(event) => setNewRitual({ ...newRitual, element: event.target.value })}><option>Conhecimento</option><option>Energia</option><option>Morte</option><option>Sangue</option></select></label></div><label>Descrição<textarea value={newRitual.description} onChange={(event) => setNewRitual({ ...newRitual, description: event.target.value })} placeholder="Descreva os efeitos deste ritual..." /></label><button className="primary-button modal-submit">Salvar ritual <span>→</span></button></form></div>}
-    </div>
-  )
+  async function syncApi() {
+    setApiStatus('Sincronizando...')
+    try {
+      const response = await fetch('https://op-fvtt-api.vercel.app/notes')
+      if (!response.ok) throw new Error('API indisponível')
+      await response.json()
+      setApiStatus('API sincronizada')
+    } catch {
+      setApiStatus('Catálogo local')
+    }
+  }
+
+  return <div className="app-shell">
+    <aside className="sidebar">
+      <div className="brand"><span className="brand-symbol">◈</span><div><strong>NOCTUA</strong><small>rpg workspace</small></div></div>
+      <div className="campaign-switcher"><span>CAMPANHA ATIVA</span><strong>O véu entre nós</strong><small>Força Umbra · 04 jogadores</small><b>⌄</b></div>
+      <nav className="main-nav">{(Object.keys(sectionInfo) as Section[]).map((item, index) => <button key={item} className={section === item ? 'active' : ''} onClick={() => setSection(item)}><span className="nav-number">0{index + 1}</span>{sectionInfo[item].title}<i>↗</i></button>)}</nav>
+      <div className="sidebar-foot"><button className="api-button" onClick={syncApi}><span className="pulse" /> {apiStatus}</button><div className="profile"><div className="profile-mark">JC</div><div><strong>Julio Colares</strong><small>Administrador</small></div><span>•••</span></div></div>
+    </aside>
+    <main className="main-content">
+      <header className="topbar"><div className="location"><span>NOCTUA</span><b>/</b>{info.title.toUpperCase()}</div><div className="topbar-actions"><button aria-label="Pesquisar">⌕</button><button aria-label="Notificações">◌<i /></button><button className="ghost-button" onClick={() => setShowModal(true)}>＋ Criar conteúdo</button></div></header>
+      <section className="page">
+        <div className="page-intro"><div><span className="eyebrow">{info.eyebrow}</span><h1>{info.title}<em>.</em></h1><p>{info.description}</p></div><div className="intro-meta"><span>ÚLTIMA ATUALIZAÇÃO</span><strong>29 SET 2026 <i>●</i></strong></div></div>
+        {section === 'system' && <><div className="signal-grid"><article className="signal-card featured"><span className="eyebrow">SINAL DA SEMANA</span><h2>O medo muda<br /><em>de forma.</em></h2><p>Uma nova forma de organizar sua mesa: personagens, conteúdo e ameaças em um mesmo arquivo vivo.</p><button onClick={() => setSection('campaigns')}>Abrir campanha <span>↗</span></button><div className="orbit">◌<i>✦</i></div></article><article className="metric-card"><span className="eyebrow">SUA FICHA</span><div className="metric-person"><div className="large-avatar">EC</div><div><strong>Evelyn Hp Croft</strong><small>Investigadora · NEX 35%</small></div></div><div className="metric-line"><span>Sanidade</span><b>42 / 50</b></div><div className="bar"><i className="sanity-bar" /></div><button onClick={() => setSection('agents')}>Ver agente <span>→</span></button></article><article className="metric-card danger"><span className="eyebrow">RADAR DE AMEAÇAS</span><strong className="big-number">07</strong><p>entidades catalogadas<br />nesta campanha</p><div className="threat-dots"><i /><i /><i /><i /><i /><i /><i /></div><button onClick={() => setSection('threats')}>Consultar radar <span>→</span></button></article></div><div className="section-heading"><div><span className="eyebrow">ACESSO RÁPIDO</span><h2>O arquivo recente</h2></div><button onClick={() => setSection('homebrew')}>Ver todo o acervo ↗</button></div><EntryList entries={entries.slice(0, 3)} /></>}
+        {section !== 'system' && <><div className="control-strip"><div className="search-field"><span>⌕</span><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder={`Buscar em ${info.title.toLowerCase()}...`} /></div><div className="filter-tabs">{['Todos', 'Habilidade', 'Arma', 'Ameaça', 'Ritual', 'Item'].map((item) => <button key={item} className={filter === item ? 'selected' : ''} onClick={() => setFilter(item)}>{item}</button>)}</div><button className="primary-button" onClick={() => setShowModal(true)}>＋ Novo registro</button></div><div className="catalog-header"><span>{visibleEntries.length} REGISTROS ENCONTRADOS</span><button onClick={syncApi}>↻ Atualizar API</button></div><EntryList entries={visibleEntries} empty={query ? 'Nenhum registro encontrado.' : undefined} /></>}
+        <footer><span>NOCTUA WORKSPACE · 01.04</span><span>Dados locais conectados ao catálogo da mesa</span><span>● ONLINE</span></footer>
+      </section>
+    </main>
+    {showModal && <div className="modal-backdrop" onMouseDown={() => setShowModal(false)}><form className="modal" onSubmit={addEntry} onMouseDown={(event) => event.stopPropagation()}><div className="modal-top"><div><span className="eyebrow">OFICINA DO MESTRE</span><h2>Novo registro</h2></div><button type="button" onClick={() => setShowModal(false)}>×</button></div><label>Tipo de conteúdo<select value={newEntry.type} onChange={(event) => setNewEntry({ ...newEntry, type: event.target.value as ContentType })}><option>Habilidade</option><option>Arma</option><option>Ameaça</option><option>Ritual</option><option>Item</option></select></label><label>Nome<input autoFocus required value={newEntry.name} onChange={(event) => setNewEntry({ ...newEntry, name: event.target.value })} placeholder="Ex: Marca do outro lado" /></label><label>Categoria ou valor<input value={newEntry.subtitle} onChange={(event) => setNewEntry({ ...newEntry, subtitle: event.target.value })} placeholder="Ex: Conhecimento · 1º círculo" /></label><label>Descrição<textarea value={newEntry.detail} onChange={(event) => setNewEntry({ ...newEntry, detail: event.target.value })} placeholder="Descreva o efeito, contexto ou pistas..." /></label><button className="primary-button save-button">Salvar no catálogo <span>↗</span></button></form></div>}
+  </div>
 }
 
-function RitualItem({ ritual }: { ritual: Ritual }) {
-  return <article className="ritual-item"><span className={`ritual-glyph ${ritual.color}`}>✦</span><div className="ritual-copy"><div><h3>{ritual.name}</h3><span className="tag">{ritual.circle}</span><span className="element">{ritual.element}</span></div><p>{ritual.description}</p></div><button className="more-button" aria-label={`Abrir ${ritual.name}`}>↗</button></article>
+function EntryList({ entries, empty }: { entries: Entry[]; empty?: string }) {
+  if (!entries.length) return <div className="empty-state">{empty ?? 'O acervo está vazio.'}</div>
+  return <div className="entry-list">{entries.map((entry) => <article className="entry-row" key={entry.id}><div className={`entry-icon ${entry.accent}`}>{entry.type === 'Ameaça' ? '☠' : entry.type === 'Arma' ? '⌁' : entry.type === 'Ritual' ? '✦' : entry.type === 'Item' ? '◇' : '✧'}</div><div className="entry-main"><div><span className="entry-type">{entry.tag}</span><h3>{entry.name}</h3></div><p>{entry.detail}</p></div><div className="entry-subtitle">{entry.subtitle}</div><button className="row-action" aria-label={`Abrir ${entry.name}`}>↗</button></article>)}</div>
 }
 
 export default App
