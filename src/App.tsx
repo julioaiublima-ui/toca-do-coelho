@@ -65,7 +65,7 @@ function App() {
 
   return <div className="app-shell">
     <aside className="sidebar">
-      <div className="brand"><div className="rabbit-mark"><span>⌁</span></div><div><strong>toca</strong><small>COELHO RPG</small></div></div>
+      <div className="brand"><div className="rabbit-mark"><img src="/logo-toca.png" alt="" onError={(event) => { event.currentTarget.style.display = 'none' }} /><span>⌁</span></div><div><strong>toca</strong><small>COELHO RPG</small></div></div>
       <button className="campaign-picker"><span className="campaign-dot" /><div><small>CAMPANHA ATIVA</small><strong>{activeCampaign.title}</strong></div><b>⌄</b></button>
       <nav className="main-nav">{navItems.map((item) => <button key={item.id} className={view === item.id ? 'active' : ''} onClick={() => setView(item.id)}><span className="nav-icon">{item.icon}</span>{item.label}{item.id === 'dice' && <i>⌘ R</i>}</button>)}</nav>
       <div className="sidebar-bottom"><button className="new-button" onClick={() => openCreate('campaign')}><span>＋</span> Nova campanha</button><div className="user-row"><div className="user-avatar">JC</div><div><strong>Julio Colares</strong><small>Plano gratuito · ilimitado</small></div><span>•••</span></div></div>
