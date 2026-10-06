@@ -47,6 +47,17 @@ npm run dev
 
 O SQLite é adequado para desenvolvimento local. Para publicar com múltiplos usuários, use PostgreSQL e configure `TOCA_DATABASE`, além de colocar o backend atrás de HTTPS.
 
+## Hospedagem gratuita
+
+O frontend já é publicado pelo GitHub Pages. Para publicar a API gratuitamente no Render:
+
+1. Crie um `Web Service` no Render apontando para este repositório.
+2. Use o arquivo `render.yaml` ou configure `pip install -r backend/requirements.txt` como build e `gunicorn --chdir backend app:app --bind 0.0.0.0:$PORT` como start.
+3. Configure `TOCA_CORS_ORIGIN` com `https://julioaiublima-ui.github.io`.
+4. No GitHub, abra `Settings > Secrets and variables > Actions > Variables` e crie `VITE_API_URL` com a URL da API Render terminando em `/api`.
+
+O plano gratuito do Render pode dormir após inatividade. O SQLite configurado no exemplo serve para teste; para não perder contas e fichas em reinícios, conecte um PostgreSQL gerenciado antes de usar em produção.
+
 ## Publicar no GitHub
 
 O código pode ser publicado em qualquer repositório GitHub com:

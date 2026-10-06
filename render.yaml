@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: toca-do-coelho-api
+    runtime: python
+    plan: free
+    buildCommand: pip install -r backend/requirements.txt
+    startCommand: gunicorn --chdir backend app:app --bind 0.0.0.0:$PORT
+    healthCheckPath: /api/health
+    envVars:
+      - key: TOCA_CORS_ORIGIN
+        sync: false
+      - key: TOCA_DATABASE
+        value: /tmp/toca.db
