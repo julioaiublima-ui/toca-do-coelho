@@ -27,7 +27,25 @@ npm run build
 npm run lint
 ```
 
-Os dados ainda são demonstrativos e ficam apenas no estado local da página. Para transformar a mesa em multiplayer real, o próximo passo é conectar autenticação, banco de dados e sincronização em tempo real, por exemplo com Supabase ou Firebase.
+## API e banco de dados
+
+O projeto agora inclui uma API Flask com SQLite para desenvolvimento. Ela oferece autenticação por token, contas, fichas, campanhas e histórico de acontecimentos.
+
+```bash
+python -m venv backend/.venv
+backend/.venv/Scripts/activate
+pip install -r backend/requirements.txt
+python backend/app.py
+```
+
+A API fica em `http://127.0.0.1:5000`. Para apontar o frontend para outro endereço, defina `VITE_API_URL`, por exemplo:
+
+```bash
+$env:VITE_API_URL="http://127.0.0.1:5000/api"
+npm run dev
+```
+
+O SQLite é adequado para desenvolvimento local. Para publicar com múltiplos usuários, use PostgreSQL e configure `TOCA_DATABASE`, além de colocar o backend atrás de HTTPS.
 
 ## Publicar no GitHub
 
