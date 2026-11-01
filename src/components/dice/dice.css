@@ -2,3 +2,54 @@
 
 /* Roller layout inspired by dedicated RPG dice tools: the formula stays visible and the result remains the focus. */
 .dice-workspace{display:grid;grid-template-columns:minmax(0,1.35fr) 330px;gap:18px;margin-top:35px}.dice-panel{background:#fbfaf6;border:1px solid #d9ddd3;padding:28px;box-shadow:0 18px 45px rgba(24,41,29,.07)}.dice-panel-top,.history-heading{display:flex;align-items:flex-start;justify-content:space-between}.formula-pill{font:11px 'DM Mono',monospace;color:#3d694e;background:#e8f0df;border:1px solid #cbdcb8;padding:7px 10px}.dice-panel .dice-roller{margin:8px auto 0}.dice-panel .dice-cube{clip-path:polygon(15% 5%,85% 5%,100% 50%,85% 95%,15% 95%,0 50%);border-radius:8px;background:linear-gradient(145deg,#16191b,#070808 66%,#252a27);border-color:#d5b66b;box-shadow:inset 18px 12px 25px #ffffff18,inset -20px -20px 30px #000b,0 22px 35px #0e101066}.dice-panel .dice-cube:before{border-color:#d8b86c55;clip-path:polygon(15% 5%,85% 5%,100% 50%,85% 95%,15% 95%,0 50%)}.dice-panel .dice-cube:after{display:none}.dice-panel .dice-cube span{color:#f2c96c;text-shadow:0 2px 4px #000}.dice-panel .dice-cube small{color:#e9dfc3}.dice-builder{border-top:1px solid #e1e4dc;padding-top:22px;margin-top:7px}.formula-field{display:block;color:#718076;font:9px 'DM Mono',monospace;letter-spacing:1px}.formula-field input{width:100%;margin-top:8px;background:#fff;border:1px solid #cfd6cb;color:#17211b;padding:12px 13px;font:14px 'DM Mono',monospace;outline:0}.formula-field input:focus{border-color:#3d694e;box-shadow:0 0 0 3px #3d694e18}.formula-field small{display:block;color:#91a096;font:10px Manrope,sans-serif;letter-spacing:0;margin-top:6px}.dice-options{display:flex;gap:12px;margin-top:18px}.dice-options>div{flex:1}.dice-options>div>span{display:block;color:#718076;font:9px 'DM Mono',monospace;letter-spacing:1px;margin-bottom:7px}.stepper{display:flex;align-items:center;border:1px solid #d9ddd3;background:#fff}.stepper button{border:0;background:#f1f3ed;color:#3d694e;width:31px;height:34px}.stepper strong{flex:1;text-align:center;color:#17211b;font:13px 'DM Mono',monospace}.dice-panel .die-options{gap:6px;margin-top:18px}.dice-panel .die-options button{flex:1;border:1px solid #d9ddd3;background:#fff;color:#718076;padding:10px 4px;font:11px 'DM Mono',monospace}.dice-panel .die-options button:hover,.dice-panel .die-options button.selected{border-color:#3d694e;background:#e8f0df;color:#244a31}.roll-modes{display:flex;gap:7px;margin-top:15px}.roll-modes button{border:1px solid #d9ddd3;background:#fff;color:#718076;padding:8px 10px;font-size:10px}.roll-modes button.active{border-color:#3d694e;background:#243f2e;color:#fff}.dice-panel .roll-main{width:100%;border:0;background:#3d694e;color:#fff;padding:14px;margin-top:16px;font-weight:700;font-size:12px}.dice-panel .roll-main span{margin-left:10px;font-size:17px}.dice-history{background:#fff;border:1px solid #d9ddd3;padding:23px;align-self:start}.history-heading h2{color:#183022;font:500 24px Fraunces,serif;margin:7px 0 0}.history-heading>span{color:#829084;font:10px 'DM Mono',monospace}.history-item{width:100%;display:flex;align-items:center;text-align:left;gap:10px;border:0;border-top:1px solid #e6e9e3;background:none;padding:14px 0;color:#17211b}.history-item:first-of-type{margin-top:17px}.history-item:hover{background:#f6f7f2}.history-die{width:28px;height:28px;display:grid;place-items:center;background:#e8f0df;color:#3d694e;clip-path:polygon(15% 5%,85% 5%,100% 50%,85% 95%,15% 95%,0 50%)}.history-item span:nth-child(2){flex:1}.history-item strong,.history-item small{display:block}.history-item strong{font:12px 'DM Mono',monospace;color:#3d694e}.history-item small{color:#829084;font-size:10px;margin-top:3px}.history-item>b{font:600 22px Fraunces,serif;color:#17211b}.history-empty{color:#91a096;font-size:12px;padding:35px 0;text-align:center}.dice-note{color:#91a096;font-size:10px;line-height:1.55;border-top:1px solid #e6e9e3;padding-top:15px;margin-top:15px}.dice-roller.compact .dice-cube{clip-path:polygon(15% 5%,85% 5%,100% 50%,85% 95%,15% 95%,0 50%);border-radius:5px;background:linear-gradient(145deg,#16191b,#070808 66%,#252a27);border-color:#d5b66b}.dice-roller.compact .dice-cube span{color:#f2c96c}.dice-roller.compact .dice-stage{height:115px}.dice-roller.compact .dice-roll-button{background:#a27cf4}@media(max-width:850px){.dice-workspace{grid-template-columns:1fr}.dice-history{order:2}}@media(max-width:520px){.dice-panel{padding:18px}.dice-options{gap:7px}.roll-modes{flex-wrap:wrap}.roll-modes button{flex:1}.dice-panel .dice-cube{width:115px;height:115px}}
+
+/* Arcane 2D presentation: graphic, readable and lighter than a faux 3D cube. */
+.dice-workspace{grid-template-columns:minmax(0,1.35fr) 330px;gap:22px}
+.dice-panel,.dice-history{background:linear-gradient(145deg,#191425,#110d1b);border:1px solid #34274a;box-shadow:0 20px 55px #08050f99;color:#f1ecfa}
+.dice-panel-top{align-items:center}
+.dice-panel .eyebrow,.dice-history .eyebrow{color:#8f82a4}
+.formula-pill{color:#cbb6ff;background:#291d3b;border-color:#55406f}
+.dice-stage{height:245px;width:300px;perspective:none}
+.dice-stage:before{width:170px;height:28px;bottom:26px;background:#05030a;filter:blur(16px);opacity:.9}
+.dice-stage:after{content:'✦  ✧  ✦';position:absolute;inset:auto 0 5px;text-align:center;color:#8f61d9aa;font-size:11px;letter-spacing:30px;animation:arcane-pulse 2.2s ease-in-out infinite}
+.dice-cube{width:148px;height:148px;clip-path:polygon(50% 0,92% 23%,100% 70%,70% 100%,25% 94%,0 54%,14% 20%);border:0!important;border-radius:0!important;background:linear-gradient(145deg,#b88cff 0 5%,#8256ce 32%,#4a2d86 73%,#2c174b);box-shadow:none!important;transform:rotate(-5deg);filter:drop-shadow(0 20px 16px #10071e);overflow:visible}
+.dice-cube:before{content:'';inset:8px;clip-path:inherit;border:1px solid #f5eaff66;transform:rotate(0);background:linear-gradient(140deg,#ffffff22,transparent 35%);position:absolute}
+.dice-cube:after{content:'☽  ✦  ☾';inset:0;display:grid;place-items:center;clip-path:inherit;color:#f2d89655;font-size:29px;letter-spacing:6px;transform:rotate(-38deg)}
+.dice-cube span{z-index:1;font:600 57px/1 Fraunces,Georgia,serif;color:#fff4d1!important;text-shadow:0 3px 12px #291048!important;transform:translateY(-3px)}
+.dice-cube small{z-index:1;bottom:28px;color:#e9d8ff!important;font-size:9px}
+.dice-stage.is-rolling .dice-cube{animation:arcane-toss .85s cubic-bezier(.2,.8,.25,1)}
+.dice-stage.is-rolling:before{animation:shadow-pulse .85s ease}
+.dice-actions{max-width:360px}
+.dice-roll-button{background:linear-gradient(135deg,#9b6bed,#7044b8)!important;box-shadow:0 8px 20px #6e42b844}
+.sound-toggle{border-color:#3c2c51;color:#9c8db0}
+.sound-toggle.enabled{color:#cdb6ff}
+.dice-builder{border-color:#34274a}
+.formula-field,.dice-options>div>span{color:#8f82a4}
+.formula-field input,.stepper,.dice-panel .die-options button,.roll-modes button{background:#100c18;border-color:#38294d;color:#e5dff0}
+.formula-field input{color:#f1ecfa}
+.formula-field input::placeholder{color:#71667f}
+.stepper button{background:#21172f;color:#c7a6ff}
+.stepper strong{color:#f1ecfa}
+.dice-panel .die-options button:hover,.dice-panel .die-options button.selected{border-color:#9c70eb;background:#39265b;color:#f6eaff}
+.roll-modes button.active{border-color:#a47bf0;background:#7449ba;color:#fff}
+.dice-panel .roll-main{background:linear-gradient(135deg,#9b6bed,#7044b8);box-shadow:0 8px 20px #6e42b844}
+.history-heading h2{color:#f1ecfa}
+.history-heading>span,.history-item small{color:#9588a4}
+.history-item{border-color:#302440;color:#eee8f5}
+.history-item:hover{background:#211832}
+.history-die{background:#35244e;color:#cdb1ff}
+.history-item strong{color:#cbb2ff}
+.history-item>b{color:#f4d786}
+.history-empty,.dice-note{color:#9588a4}
+.dice-note{border-color:#302440}
+.dice-roller.compact .dice-stage{height:105px}
+.dice-roller.compact .dice-cube{width:74px;height:74px}
+.dice-roller.compact .dice-cube span{font-size:27px}
+.dice-roller.compact .dice-cube small{bottom:13px}
+.dice-roller.compact .dice-stage:after{font-size:7px;letter-spacing:8px;bottom:0}
+.dice-roller.compact .dice-roll-button{background:#8c5cdb!important}
+@keyframes arcane-toss{0%{transform:translateY(25px) rotate(-18deg) scale(.8);opacity:.7}35%{transform:translateY(-25px) rotate(13deg) scale(1.05);opacity:1}68%{transform:translateY(5px) rotate(-7deg) scale(.97)}100%{transform:translateY(0) rotate(-5deg) scale(1)}}
+@keyframes shadow-pulse{0%,100%{transform:scale(.75);opacity:.45}40%{transform:scale(1.16);opacity:1}}
+@keyframes arcane-pulse{0%,100%{opacity:.35;transform:translateY(0)}50%{opacity:1;transform:translateY(-4px)}}
+@media(prefers-reduced-motion:reduce){.dice-stage:after{animation:none}.dice-stage.is-rolling .dice-cube,.dice-stage.is-rolling:before{animation:none}}
+@media(max-width:520px){.dice-stage{width:250px;height:215px}.dice-cube{width:130px;height:130px}}
