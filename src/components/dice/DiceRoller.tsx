@@ -38,7 +38,9 @@ function playTone(enabled: boolean, frequency: number, duration: number, volume 
 
 function makeDice(results: number[] | undefined, sides: number): VisualDie[] {
   const values = results?.length ? results : [sides]
-  return values.map((value, index) => ({ id: Date.now() + index, value, x: 12 + (index * 23) % 76, delay: index * 0.06, rotation: -18 + index * 13 }))
+  const spacing = values.length === 1 ? 0 : Math.min(68, 78 / (values.length - 1))
+  const start = values.length === 1 ? 50 : 50 - ((values.length - 1) * spacing) / 2
+  return values.map((value, index) => ({ id: Date.now() + index, value, x: start + index * spacing, delay: index * 0.06, rotation: -18 + index * 13 }))
 }
 
 export function DiceRoller({ selectedDie, result, results, winningValue, onRoll, compact = false }: DiceRollerProps) {
