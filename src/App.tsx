@@ -72,9 +72,9 @@ function App() {
     const requestedCount = Number(match[1] || 1)
     const count = Math.min(requestedCount === 0 ? 2 : requestedCount, 100)
     const sides = Number(match[2])
-    const keepMode = requestedCount === 0 ? 'l' : match[5]
-    const keepCount = requestedCount === 0 ? 1 : Math.min(Number(match[6] || count), count)
-    const modifier = Number(match[7] || 0)
+    const keepMode = requestedCount === 0 ? 'l' : match[4]
+    const keepCount = requestedCount === 0 ? 1 : Math.min(Number(match[5] || count), count)
+    const modifier = Number(match[6] || 0)
     const values = Array.from({ length: count }, () => Math.floor(Math.random() * sides) + 1)
     const kept = keepMode === 'h' ? [...values].sort((a, b) => b - a).slice(0, keepCount) : keepMode === 'l' ? [...values].sort((a, b) => a - b).slice(0, keepCount) : values
     const total = kept.reduce((sum, value) => sum + value, 0) + modifier
