@@ -13,7 +13,7 @@ type View = 'home' | 'overview' | 'campaigns' | 'characters' | 'sheet' | 'dice' 
 type SystemName = 'Ordem Paranormal' | 'D&D 5e' | 'Tormenta20' | 'Sistema próprio'
 type Campaign = { id: number; title: string; system: SystemName; players: number; scene: string; color: string; updated: string }
 type Character = { id: number; name: string; player: string; role: string; system: SystemName; level: string; hp: number; maxHp: number; color: string }
-type RollRecord = { id: number; formula: string; total: number; detail: string; at: string }
+type RollRecord = { id: number; formula: string; total: number; values: number[]; detail: string; at: string }
 
 const systems: { name: SystemName; mark: string; note: string }[] = [
   { name: 'Ordem Paranormal', mark: 'OP', note: 'Investigação e horror' },
@@ -51,7 +51,7 @@ function App() {
   const [selectedCharacter, setSelectedCharacter] = useState(seedCharacters[0])
   const [showCreate, setShowCreate] = useState(false)
   const [createType, setCreateType] = useState<'campaign' | 'character'>('campaign')
-  const [roll, setRoll] = useState<{ total: number; dice: string } | null>(null)
+  const [roll, setRoll] = useState<{ total: number; dice: string; values: number[]; detail: string } | null>(null)
   const [selectedDie, setSelectedDie] = useState('d20')
   const [rollHistory, setRollHistory] = useState<RollRecord[]>([])
   const greeting = useMemo(() => new Date().getHours() < 12 ? 'Bom dia' : 'Boa tarde', [])
@@ -69,10 +69,11 @@ function App() {
   function rollDice(formula = selectedDie) {
     const match = formula.toLowerCase().replace(/\s/g, '').match(/^(\d+)?d(\d+)(k([hl])(\d+))?([+-]\d+)?$/)
     if (!match) return
-    const count = Math.min(Number(match[1] || 1), 100)
+    const requestedCount = Number(match[1] || 1)
+    const count = Math.min(requestedCount === 0 ? 2 : requestedCount, 100)
     const sides = Number(match[2])
-    const keepMode = match[5]
-    const keepCount = Math.min(Number(match[6] || count), count)
+    const keepMode = requestedCount === 0 ? 'l' : match[5]
+    const keepCount = requestedCount === 0 ? 1 : Math.min(Number(match[6] || count), count)
     const modifier = Number(match[7] || 0)
     const values = Array.from({ length: count }, () => Math.floor(Math.random() * sides) + 1)
     const kept = keepMode === 'h' ? [...values].sort((a, b) => b - a).slice(0, keepCount) : keepMode === 'l' ? [...values].sort((a, b) => a - b).slice(0, keepCount) : values
@@ -80,8 +81,8 @@ function App() {
     const normalized = formula.toLowerCase().replace(/\s/g, '')
     const detail = `${values.join(' + ')}${modifier ? ` ${modifier > 0 ? '+' : '−'} ${Math.abs(modifier)}` : ''}`
     setSelectedDie(normalized.match(/d\d+/)?.[0] || selectedDie)
-    setRoll({ total, dice: normalized })
-    setRollHistory((current) => [{ id: Date.now(), formula: normalized, total, detail, at: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) }, ...current].slice(0, 12))
+    setRoll({ total, dice: normalized, values, detail })
+    setRollHistory((current) => [{ id: Date.now(), formula: normalized, total, values, detail, at: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) }, ...current].slice(0, 12))
   }
 
   if (view === 'home') return <Landing onEnter={() => setView('overview')} onCreate={() => openCreate('character')} />
@@ -143,15 +144,16 @@ function CharacterSheet({ character, onBack, onRoll }: { character: Character; o
 
 function Resource({ label, value, max, color }: { label: string; value: number; max: number; color: string }) { return <div className={`resource resource-${color}`}><span>{label}</span><strong>{value}<small> / {max}</small></strong><div><i style={{ width: `${value / max * 100}%` }} /></div></div> }
 function SheetPanel({ title, note, children }: { title: string; note: string; children: React.ReactNode }) { return <section className="sheet-panel"><header><h2>{title}</h2><span>{note}</span></header>{children}</section> }
-function DiceRoom({ selectedDie, roll, history, onRoll }: { selectedDie: string; roll: { total: number; dice: string } | null; history: RollRecord[]; onRoll: (dice?: string) => void }) {
-  const [quantity, setQuantity] = useState(1)
-  const [modifier, setModifier] = useState(0)
+function DiceRoom({ selectedDie, roll, history, onRoll }: { selectedDie: string; roll: { total: number; dice: string; values: number[]; detail: string } | null; history: RollRecord[]; onRoll: (dice?: string) => void }) {
+  const [attribute, setAttribute] = useState(1)
+  const [skill, setSkill] = useState(0)
   const [mode, setMode] = useState<'normal' | 'advantage' | 'disadvantage'>('normal')
   const [formula, setFormula] = useState('')
   const dice = ['d4', 'd6', 'd8', 'd10', 'd12', 'd20', 'd100']
-  const selectedFormula = mode === 'advantage' ? '2d20kh1' : mode === 'disadvantage' ? '2d20kl1' : `${quantity}${selectedDie}${modifier ? `${modifier > 0 ? '+' : ''}${modifier}` : ''}`
+  const selectedFormula = mode === 'advantage' ? '2d20kh1' : mode === 'disadvantage' ? '2d20kl1' : `${attribute}${selectedDie}${skill ? `${skill > 0 ? '+' : ''}${skill}` : ''}`
   function execute() { onRoll(formula.trim() || selectedFormula) }
-  return <section className="dice-room"><div className="page-heading"><div><span className="eyebrow">FERRAMENTA DA MESA · ARQUIVO DE ROLAGENS</span><h1>Rolagem <em>rápida.</em></h1><p>Monte sua fórmula, escolha o modo e deixe o acaso decidir.</p></div></div><div className="dice-workspace"><div className="dice-panel"><div className="dice-panel-top"><span className="eyebrow">RESULTADO ATUAL</span><span className="formula-pill">{roll?.dice || selectedFormula}</span></div><DiceRoller selectedDie={selectedDie} result={roll?.total} onRoll={() => execute()} /><div className="dice-builder"><label className="formula-field"><span>FÓRMULA LIVRE</span><input value={formula} onChange={(event) => setFormula(event.target.value)} onKeyDown={(event) => { if (event.key === 'Enter') execute() }} placeholder="Ex.: 2d6+3 ou 4d6kh3" aria-label="Fórmula de dados" /><small>Use d4 até d100, modificadores e kh/kl.</small></label><div className="dice-options"><div><span>QUANTIDADE</span><div className="stepper"><button onClick={() => setQuantity(Math.max(1, quantity - 1))}>−</button><strong>{quantity}</strong><button onClick={() => setQuantity(Math.min(20, quantity + 1))}>＋</button></div></div><div><span>MODIFICADOR</span><div className="stepper"><button onClick={() => setModifier(modifier - 1)}>−</button><strong>{modifier > 0 ? `+${modifier}` : modifier}</strong><button onClick={() => setModifier(modifier + 1)}>＋</button></div></div></div><div className="die-options">{dice.map((die) => <button key={die} className={selectedDie === die ? 'selected' : ''} onClick={() => { setFormula(''); onRoll(`${quantity}${die}${modifier ? `${modifier > 0 ? '+' : ''}${modifier}` : ''}`) }}>{die}</button>)}</div><div className="roll-modes"><button className={mode === 'normal' ? 'active' : ''} onClick={() => setMode('normal')}>Normal</button><button className={mode === 'advantage' ? 'active' : ''} onClick={() => setMode('advantage')}>Vantagem</button><button className={mode === 'disadvantage' ? 'active' : ''} onClick={() => setMode('disadvantage')}>Desvantagem</button></div><button className="roll-main" onClick={execute}>Rolar {formula || selectedFormula} <span>↗</span></button></div></div><aside className="dice-history"><div className="history-heading"><div><span className="eyebrow">SESSÃO ATUAL</span><h2>Histórico</h2></div><span>{history.length} rolagens</span></div>{history.length ? history.map((item) => <button className="history-item" key={item.id} onClick={() => onRoll(item.formula)}><span className="history-die">✦</span><span><strong>{item.formula}</strong><small>{item.detail} · {item.at}</small></span><b>{item.total}</b></button>) : <div className="history-empty">Suas rolagens aparecem aqui.</div>}<p className="dice-note">Som opcional e processado no seu dispositivo. Nenhuma rolagem é enviada para fora do navegador.</p></aside></div></section>
+  const winningValue = roll?.values.length ? (attribute === 0 ? Math.min(...roll.values) : Math.max(...roll.values)) : null
+  return <section className="dice-room"><div className="page-heading"><div><span className="eyebrow">C.R.I.S. · ROLAGEM DE POOL</span><h1>O acaso <em>responde.</em></h1><p>Jogue os dados da sua perícia e deixe o paranormal decidir.</p></div></div><div className="dice-workspace"><div className="dice-panel"><div className="dice-panel-top"><span className="eyebrow">RESULTADO ATUAL</span><span className="formula-pill">{roll?.dice || selectedFormula}</span></div><DiceRoller selectedDie={selectedDie} result={roll?.total} results={roll?.values} winningValue={winningValue} onRoll={() => execute()} /><div className="dice-builder"><div className="cris-fields"><label><span>ATRIBUTO</span><input type="number" min="0" max="20" value={attribute} onChange={(event) => setAttribute(Math.max(0, Number(event.target.value)))} /><small>{attribute === 0 ? '0 = rola 2 e pega o menor' : `${attribute} dado${attribute === 1 ? '' : 's'} · pega o maior`}</small></label><label><span>PERÍCIA</span><input type="number" step="5" value={skill} onChange={(event) => setSkill(Number(event.target.value))} /><small>Somado ao resultado final</small></label></div><label className="formula-field"><span>FÓRMULA LIVRE</span><input value={formula} onChange={(event) => setFormula(event.target.value)} onKeyDown={(event) => { if (event.key === 'Enter') execute() }} placeholder="Ex.: 2d6+3 ou 4d6kh3" aria-label="Fórmula de dados" /><small>Use fórmula livre ou os campos C.R.I.S. abaixo.</small></label><div className="die-options">{dice.map((die) => <button key={die} className={selectedDie === die ? 'selected' : ''} onClick={() => { setFormula(''); onRoll(`${attribute}${die}${skill ? `${skill > 0 ? '+' : ''}${skill}` : ''}`) }}>{die}</button>)}</div><div className="roll-modes"><button className={mode === 'normal' ? 'active' : ''} onClick={() => setMode('normal')}>Normal</button><button className={mode === 'advantage' ? 'active' : ''} onClick={() => setMode('advantage')}>Vantagem</button><button className={mode === 'disadvantage' ? 'active' : ''} onClick={() => setMode('disadvantage')}>Desvantagem</button></div><button className="roll-main" onClick={execute}>Rolar {formula || selectedFormula} <span>↗</span></button>{roll && <div className="roll-breakdown"><span>Dados: [{roll.values.join(', ')}]</span><strong>{winningValue} {attribute === 0 ? '(menor)' : '(maior)'} {skill ? `${skill >= 0 ? '+' : '−'} ${Math.abs(skill)}` : ''} = {roll.total}</strong></div>}</div></div><aside className="dice-history"><div className="history-heading"><div><span className="eyebrow">SESSÃO ATUAL</span><h2>Histórico</h2></div><span>{history.length} rolagens</span></div>{history.length ? history.map((item) => <button className="history-item" key={item.id} onClick={() => onRoll(item.formula)}><span className="history-die">✦</span><span><strong>{item.formula}</strong><small>{item.detail} · {item.at}</small></span><b>{item.total}</b></button>) : <div className="history-empty">Suas rolagens aparecem aqui.</div>}<p className="dice-note">Som de lançamento e colisão gerado no navegador. Nenhuma rolagem é enviada para fora do dispositivo.</p></aside></div></section>
 }
 function Library() { const [query, setQuery] = useState(''); const [activeSystem, setActiveSystem] = useState<SystemName | 'Todos'>('Todos'); const filtered = systems.filter((system) => (activeSystem === 'Todos' || system.name === activeSystem) && `${system.name} ${system.note}`.toLowerCase().includes(query.toLowerCase())); return <Collection title="Biblioteca" kicker="REGRAS E REFERÊNCIAS" description="Pesquise sistemas e referências para a sua mesa." action="Adicionar conteúdo" onAction={() => undefined}><div className="library-toolbar"><label className="library-search"><span>⌕</span><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Buscar na biblioteca" aria-label="Buscar na biblioteca" /></label><span>{filtered.length} registros</span></div><div className="library-filters"><button className={activeSystem === 'Todos' ? 'active' : ''} onClick={() => setActiveSystem('Todos')}>Todos</button>{systems.map((system) => <button key={system.name} className={activeSystem === system.name ? 'active' : ''} onClick={() => setActiveSystem(system.name)}>{system.mark}</button>)}</div><div className="library-grid">{filtered.map((system) => <article className="system-card" key={system.name}><span className="system-mark">{system.mark}</span><div><h3>{system.name}</h3><p>{system.note}</p></div><span>↗</span></article>)}</div>{filtered.length === 0 && <div className="library-empty"><strong>Nenhum conteúdo encontrado</strong><span>Altere o termo ou o sistema selecionado.</span></div>}</Collection> }
 

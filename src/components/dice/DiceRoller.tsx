@@ -1,20 +1,23 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import type { CSSProperties } from 'react'
 import './dice.css'
 
 declare global {
-  interface Window {
-    webkitAudioContext?: typeof AudioContext
-  }
+  interface Window { webkitAudioContext?: typeof AudioContext }
 }
 
 type DiceRollerProps = {
   selectedDie: string
   result?: number | null
+  results?: number[]
+  winningValue?: number | null
   onRoll: (die?: string) => void
   compact?: boolean
 }
 
-function playRollSound(enabled: boolean) {
+type VisualDie = { id: number; value: number; x: number; delay: number; rotation: number }
+
+function playTone(enabled: boolean, frequency: number, duration: number, volume = 0.06) {
   if (!enabled) return
   const AudioContextClass = window.AudioContext || window.webkitAudioContext
   if (!AudioContextClass) return
@@ -22,45 +25,58 @@ function playRollSound(enabled: boolean) {
   const oscillator = context.createOscillator()
   const gain = context.createGain()
   oscillator.type = 'triangle'
-  oscillator.frequency.setValueAtTime(130, context.currentTime)
-  oscillator.frequency.exponentialRampToValueAtTime(54, context.currentTime + 0.18)
+  oscillator.frequency.setValueAtTime(frequency, context.currentTime)
   gain.gain.setValueAtTime(0.0001, context.currentTime)
-  gain.gain.exponentialRampToValueAtTime(0.14, context.currentTime + 0.015)
-  gain.gain.exponentialRampToValueAtTime(0.0001, context.currentTime + 0.2)
+  gain.gain.exponentialRampToValueAtTime(volume, context.currentTime + 0.01)
+  gain.gain.exponentialRampToValueAtTime(0.0001, context.currentTime + duration)
   oscillator.connect(gain)
   gain.connect(context.destination)
   oscillator.start()
-  oscillator.stop(context.currentTime + 0.21)
+  oscillator.stop(context.currentTime + duration)
   oscillator.addEventListener('ended', () => void context.close())
 }
 
-export function DiceRoller({ selectedDie, result, onRoll, compact = false }: DiceRollerProps) {
+function makeDice(results: number[] | undefined, sides: number): VisualDie[] {
+  const values = results?.length ? results : [sides]
+  return values.map((value, index) => ({ id: Date.now() + index, value, x: 12 + (index * 23) % 76, delay: index * 0.06, rotation: -18 + index * 13 }))
+}
+
+export function DiceRoller({ selectedDie, result, results, winningValue, onRoll, compact = false }: DiceRollerProps) {
   const [rolling, setRolling] = useState(false)
   const [soundEnabled, setSoundEnabled] = useState(true)
   const timer = useRef<number | undefined>(undefined)
+  const collisionTimer = useRef<number | undefined>(undefined)
+  const sides = Number(selectedDie.slice(1)) || 20
+
+  const dice = useMemo(() => makeDice(results, sides), [results, sides])
 
   useEffect(() => () => {
     if (timer.current) window.clearTimeout(timer.current)
+    if (collisionTimer.current) window.clearInterval(collisionTimer.current)
   }, [])
 
   function roll(die = selectedDie) {
     if (rolling) return
     setRolling(true)
-    playRollSound(soundEnabled)
+    playTone(soundEnabled, 92, 0.2, 0.08)
+    collisionTimer.current = window.setInterval(() => playTone(soundEnabled, 150 + Math.random() * 100, 0.06, 0.035), 170)
     onRoll(die)
-    timer.current = window.setTimeout(() => setRolling(false), 850)
+    timer.current = window.setTimeout(() => {
+      setRolling(false)
+      if (collisionTimer.current) window.clearInterval(collisionTimer.current)
+      playTone(soundEnabled, 280, 0.08, 0.045)
+    }, 1050)
   }
 
   return <div className={`dice-roller ${compact ? 'compact' : ''}`}>
-    <div className={`dice-stage ${rolling ? 'is-rolling' : ''}`} aria-live="polite" aria-label={result ? `Resultado ${result} no ${selectedDie}` : `Dado ${selectedDie}`}>
-      <div className="dice-cube">
-        <span>{result ?? selectedDie.slice(1)}</span>
-        <small>{selectedDie}</small>
-      </div>
+    <div className={`dice-stage ${rolling ? 'is-rolling' : ''}`} aria-live="polite" aria-label={result ? `Resultado ${result} no ${selectedDie}` : `Pool de ${selectedDie}`}>
+      <div className="dice-floor" />
+      {dice.map((die) => <div key={die.id} className={`physics-die ${rolling ? 'physics-rolling' : ''} ${winningValue !== null && winningValue !== undefined && die.value === winningValue ? 'candidate' : ''}`} style={{ left: `${die.x}%`, animationDelay: `${die.delay}s`, '--die-rotation': `${die.rotation}deg` } as CSSProperties}><div className="die-3d"><span className="die-face die-front">{die.value}</span><span className="die-face die-top">✦</span><span className="die-face die-side">{selectedDie}</span></div></div>)}
+      {!dice.length && <div className="dice-empty">Aguardando rolagem</div>}
     </div>
     <div className="dice-actions">
       <button className="dice-roll-button" onClick={() => roll()} disabled={rolling}>Rolar {selectedDie} <span>↗</span></button>
-      <button className={`sound-toggle ${soundEnabled ? 'enabled' : ''}`} onClick={() => setSoundEnabled((current) => !current)} aria-pressed={soundEnabled} title={soundEnabled ? 'Desativar som' : 'Ativar som'}>{soundEnabled ? '♫ Som' : 'Som desligado'}</button>
+      <button className={`sound-toggle ${soundEnabled ? 'enabled' : ''}`} onClick={() => setSoundEnabled((current) => !current)} aria-pressed={soundEnabled}>{soundEnabled ? '♫ Som' : 'Som desligado'}</button>
     </div>
   </div>
 }
