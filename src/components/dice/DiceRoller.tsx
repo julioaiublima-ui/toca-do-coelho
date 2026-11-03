@@ -14,9 +14,6 @@ type DiceRollerProps = {
   winningValue?: number | null
   onRoll: (die?: string) => void
   compact?: boolean
-  showActions?: boolean
-  soundEnabled?: boolean
-  onSoundEnabledChange?: (enabled: boolean) => void
 }
 
 type VisualDie = { id: number; value: number; x: number; delay: number; rotation: number }
@@ -75,15 +72,12 @@ function makeDice(results: number[] | undefined, sides: number): VisualDie[] {
   return values.map((value, index) => ({ id: Date.now() + index, value, x: start + index * spacing, delay: index * 0.06, rotation: -18 + index * 13 }))
 }
 
-export function DiceRoller({ selectedDie, result, results, winningValue, onRoll, compact = false, showActions = true, soundEnabled: soundPreference, onSoundEnabledChange }: DiceRollerProps) {
+export function DiceRoller({ selectedDie, result, results, winningValue, onRoll, compact = false }: DiceRollerProps) {
   const [rolling, setRolling] = useState(false)
-  const [soundEnabled, setSoundEnabled] = useState(soundPreference ?? true)
+  const [soundEnabled, setSoundEnabled] = useState(true)
   const timer = useRef<number | undefined>(undefined)
   const collisionTimer = useRef<number | undefined>(undefined)
   const sides = Number(selectedDie.slice(1)) || 20
-  useEffect(() => {
-    if (soundPreference !== undefined) setSoundEnabled(soundPreference)
-  }, [soundPreference])
 
   const dice = useMemo(() => makeDice(results, sides), [results, sides])
 
@@ -116,9 +110,9 @@ export function DiceRoller({ selectedDie, result, results, winningValue, onRoll,
       {dice.length === 1 ? <ThreeDiceCanvas sides={sides} rolling={rolling} compact={compact} /> : dice.map((die) => <div key={die.id} className={`physics-die die-shape-${sides} ${rolling ? 'physics-rolling' : ''} ${winningValue !== null && winningValue !== undefined && die.value === winningValue ? 'candidate' : ''}`} style={{ left: `${die.x}%`, animationDelay: `${die.delay}s`, '--die-rotation': `${die.rotation}deg` } as CSSProperties}><div className="die-3d"><span className="die-face die-front">{die.value}</span><span className="die-face die-top">✦</span><span className="die-face die-side">{selectedDie}</span></div></div>)}
       {!dice.length && <div className="dice-empty">Aguardando rolagem</div>}
     </div>
-    {showActions && <div className="dice-actions">
+    <div className="dice-actions">
       <button className="dice-roll-button" onClick={() => roll()} disabled={rolling}>Rolar {selectedDie} <span>↗</span></button>
-      <button className={`sound-toggle ${soundEnabled ? 'enabled' : ''}`} onClick={() => setSoundEnabled((current) => { const next = !current; onSoundEnabledChange?.(next); return next })} aria-pressed={soundEnabled}>{soundEnabled ? '♫ Som' : 'Som desligado'}</button>
-    </div>}
+      <button className={`sound-toggle ${soundEnabled ? 'enabled' : ''}`} onClick={() => setSoundEnabled((current) => !current)} aria-pressed={soundEnabled}>{soundEnabled ? '♫ Som' : 'Som desligado'}</button>
+    </div>
   </div>
 }
