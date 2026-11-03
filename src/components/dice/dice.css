@@ -115,8 +115,7 @@
 .dice-collection-header p{margin:0;color:#9e91b0;font-size:12px}
 .dice-collection .dice-workspace{gap:18px}
 .dice-collection .dice-panel{padding:0 20px 24px}
-.dice-collection .dice-roller{align-items:center}
-.dice-collection .dice-stage{width:100%;max-width:940px;height:390px;margin-inline:auto;border-radius:16px}
+.dice-collection .dice-stage{height:390px;border-radius:16px}
 .dice-collection .arcana-dice-canvas{min-height:390px}
 .dice-collection .dice-visual-heading{top:18px}
 .dice-collection .dice-visual-heading small{color:#c4a56e}
