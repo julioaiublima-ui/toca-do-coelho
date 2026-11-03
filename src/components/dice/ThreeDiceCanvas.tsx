@@ -17,7 +17,7 @@ export function ThreeDiceCanvas({ sides, rolling, compact = false }: ThreeDiceCa
     const canvasElement = canvas
     const scene = new THREE.Scene()
     const camera = new THREE.PerspectiveCamera(30, 1, 0.1, 100)
-    camera.position.set(0, 0.15, 5.8)
+    camera.position.set(0, 0.15, 5)
     const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true })
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
     renderer.outputColorSpace = THREE.SRGBColorSpace
@@ -60,7 +60,8 @@ export function ThreeDiceCanvas({ sides, rolling, compact = false }: ThreeDiceCa
       const size = bounds.getSize(new THREE.Vector3())
       const center = bounds.getCenter(new THREE.Vector3())
       const largestSide = Math.max(size.x, size.y, size.z) || 1
-      model.scale.setScalar((compact ? 1.5 : 2.05) / largestSide)
+      const targetSize = compact ? 1.6 : 2.65
+      model.scale.setScalar(targetSize / largestSide)
       model.position.set(-center.x * model.scale.x, -center.y * model.scale.y, -center.z * model.scale.z)
       model.traverse((object) => {
         if (object instanceof THREE.Mesh) {
@@ -70,7 +71,10 @@ export function ThreeDiceCanvas({ sides, rolling, compact = false }: ThreeDiceCa
       })
       group.clear()
       group.add(model)
-      camera.position.z = compact ? 4.8 : 5.8
+      const scaledBounds = new THREE.Box3().setFromObject(model)
+      const radius = scaledBounds.getBoundingSphere(new THREE.Sphere()).radius || 1
+      const fitPadding = compact ? 1.3 : 1.15
+      camera.position.z = (radius / Math.tan(THREE.MathUtils.degToRad(camera.fov / 2))) * fitPadding
       startedAt = performance.now()
       render()
       if (!rolling) return
