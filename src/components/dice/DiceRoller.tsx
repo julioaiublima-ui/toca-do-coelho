@@ -122,7 +122,7 @@ export function DiceRoller({ selectedDie, result, results, winningValue, onRoll,
       {!dice.length && <div className="dice-empty">Aguardando rolagem</div>}
     </div>
     {showActions && <div className="dice-actions">
-      <button className="dice-roll-button" onClick={() => roll()} disabled={rolling}>Rolar {selectedDie} <span>↗</span></button>
+      <button className="dice-roll-button" onClick={() => roll()} disabled={rolling}>Rolar {selectedDie}</button>
       <button className={`sound-toggle ${soundEnabled ? 'enabled' : ''}`} onClick={() => setSoundEnabled((current) => { const next = !current; onSoundEnabledChange?.(next); return next })} aria-pressed={soundEnabled}>{soundEnabled ? '♫ Som' : 'Som desligado'}</button>
     </div>}
   </div>
