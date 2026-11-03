@@ -43,6 +43,17 @@ const navItems: { id: View; label: string; icon: string }[] = [
   { id: 'table', label: 'Sala da mesa', icon: '◉' },
 ]
 
+function secureRandomInt(maxExclusive: number) {
+  const cryptoApi = globalThis.crypto
+  if (!cryptoApi?.getRandomValues || maxExclusive <= 0) return Math.floor(Math.random() * maxExclusive)
+  const range = 0x100000000
+  const limit = range - (range % maxExclusive)
+  const buffer = new Uint32Array(1)
+  do cryptoApi.getRandomValues(buffer)
+  while (buffer[0] >= limit)
+  return buffer[0] % maxExclusive
+}
+
 function App() {
   const [view, setView] = useState<View>(() => window.location.pathname.startsWith('/mesa/') ? 'table' : 'home')
   const [campaigns, setCampaigns] = useState(seedCampaigns)
@@ -75,7 +86,7 @@ function App() {
     const keepMode = requestedCount === 0 ? 'l' : match[4]
     const keepCount = requestedCount === 0 ? 1 : Math.min(Number(match[5] || count), count)
     const modifier = Number(match[6] || 0)
-    const values = Array.from({ length: count }, () => Math.floor(Math.random() * sides) + 1)
+    const values = Array.from({ length: count }, () => secureRandomInt(sides) + 1)
     const kept = keepMode === 'h'
       ? [...values].sort((a, b) => b - a).slice(0, keepCount)
       : keepMode === 'l'

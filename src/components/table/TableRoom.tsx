@@ -19,6 +19,17 @@ const seedMessages: TableMessage[] = [
 ]
 const seedRolls: TableRoll[] = [{ id: 1, actor: 'Evelyn Croft', dice: 'd20', total: 17, at: '21:06' }]
 
+function secureRandomInt(maxExclusive: number) {
+  const cryptoApi = globalThis.crypto
+  if (!cryptoApi?.getRandomValues || maxExclusive <= 0) return Math.floor(Math.random() * maxExclusive)
+  const range = 0x100000000
+  const limit = range - (range % maxExclusive)
+  const buffer = new Uint32Array(1)
+  do cryptoApi.getRandomValues(buffer)
+  while (buffer[0] >= limit)
+  return buffer[0] % maxExclusive
+}
+
 export function TableRoom({ campaign, characters, onExit }: TableRoomProps) {
   const [status, setStatus] = useState<TableSessionStatus>('active')
   const [scene, setScene] = useState(scenes[0])
@@ -41,7 +52,7 @@ export function TableRoom({ campaign, characters, onExit }: TableRoomProps) {
   }
 
   function roll(dice = selectedDie, actor = 'Evelyn Croft') {
-    const sides = Number(dice.slice(1)); const total = Math.floor(Math.random() * sides) + 1; const at = currentTime()
+    const sides = Number(dice.slice(1)); const total = secureRandomInt(sides) + 1; const at = currentTime()
     setSelectedDie(dice)
     setRolls((current) => [{ id: Date.now(), actor, dice, total, at }, ...current].slice(0, 8))
     setMessages((current) => [...current, { id: Date.now() + 1, author: 'Sistema', kind: 'system', text: `${actor} rolou 1${dice} → ${total}`, at }])
