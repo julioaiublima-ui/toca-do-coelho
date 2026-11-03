@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type { CSSProperties } from 'react'
 import './dice.css'
-import { ArcanaDiceCanvas } from './ArcanaDiceCanvas'
+import { ThreeDiceCanvas } from './ThreeDiceCanvas'
 
 declare global {
   interface Window { webkitAudioContext?: typeof AudioContext }
@@ -107,7 +107,7 @@ export function DiceRoller({ selectedDie, result, results, winningValue, onRoll,
   return <div className={`dice-roller ${compact ? 'compact' : ''}`}>
     <div className={`dice-stage ${rolling ? 'is-rolling' : ''}`} aria-live="polite" aria-label={result ? `Resultado ${result} no ${selectedDie}` : `Pool de ${selectedDie}`}>
       <div className="dice-floor" />
-      {dice.length === 1 ? <ArcanaDiceCanvas sides={sides} value={dice[0].value} rolling={rolling} compact={compact} /> : dice.map((die) => <div key={die.id} className={`physics-die die-shape-${sides} ${rolling ? 'physics-rolling' : ''} ${winningValue !== null && winningValue !== undefined && die.value === winningValue ? 'candidate' : ''}`} style={{ left: `${die.x}%`, animationDelay: `${die.delay}s`, '--die-rotation': `${die.rotation}deg` } as CSSProperties}><div className="die-3d"><span className="die-face die-front">{die.value}</span><span className="die-face die-top">✦</span><span className="die-face die-side">{selectedDie}</span></div></div>)}
+      {dice.length === 1 ? <ThreeDiceCanvas sides={sides} rolling={rolling} compact={compact} /> : dice.map((die) => <div key={die.id} className={`physics-die die-shape-${sides} ${rolling ? 'physics-rolling' : ''} ${winningValue !== null && winningValue !== undefined && die.value === winningValue ? 'candidate' : ''}`} style={{ left: `${die.x}%`, animationDelay: `${die.delay}s`, '--die-rotation': `${die.rotation}deg` } as CSSProperties}><div className="die-3d"><span className="die-face die-front">{die.value}</span><span className="die-face die-top">✦</span><span className="die-face die-side">{selectedDie}</span></div></div>)}
       {!dice.length && <div className="dice-empty">Aguardando rolagem</div>}
     </div>
     <div className="dice-actions">
