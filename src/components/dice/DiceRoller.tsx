@@ -36,6 +36,34 @@ function playTone(enabled: boolean, frequency: number, duration: number, volume 
   oscillator.addEventListener('ended', () => void context.close())
 }
 
+function playDiceImpact(enabled: boolean, final = false) {
+  if (!enabled) return
+  const AudioContextClass = window.AudioContext || window.webkitAudioContext
+  if (!AudioContextClass) return
+  const context = new AudioContextClass()
+  const duration = final ? 0.16 : 0.07
+  const buffer = context.createBuffer(1, Math.ceil(context.sampleRate * duration), context.sampleRate)
+  const data = buffer.getChannelData(0)
+  for (let index = 0; index < data.length; index += 1) {
+    const fade = 1 - index / data.length
+    data[index] = (Math.random() * 2 - 1) * fade * fade
+  }
+  const source = context.createBufferSource()
+  const filter = context.createBiquadFilter()
+  const gain = context.createGain()
+  source.buffer = buffer
+  filter.type = 'bandpass'
+  filter.frequency.value = final ? 760 : 1150 + Math.random() * 500
+  filter.Q.value = 0.8
+  gain.gain.setValueAtTime(final ? 0.22 : 0.1, context.currentTime)
+  gain.gain.exponentialRampToValueAtTime(0.0001, context.currentTime + duration)
+  source.connect(filter)
+  filter.connect(gain)
+  gain.connect(context.destination)
+  source.start()
+  source.addEventListener('ended', () => void context.close())
+}
+
 function makeDice(results: number[] | undefined, sides: number): VisualDie[] {
   const values = results?.length ? results : [sides]
   const spacing = values.length === 1 ? 0 : Math.min(68, 78 / (values.length - 1))
@@ -61,19 +89,24 @@ export function DiceRoller({ selectedDie, result, results, winningValue, onRoll,
     if (rolling) return
     setRolling(true)
     playTone(soundEnabled, 92, 0.2, 0.08)
-    collisionTimer.current = window.setInterval(() => playTone(soundEnabled, 150 + Math.random() * 100, 0.06, 0.035), 170)
+    playDiceImpact(soundEnabled)
+    collisionTimer.current = window.setInterval(() => {
+      playTone(soundEnabled, 150 + Math.random() * 100, 0.06, 0.035)
+      playDiceImpact(soundEnabled)
+    }, 170)
     onRoll(die)
     timer.current = window.setTimeout(() => {
       setRolling(false)
       if (collisionTimer.current) window.clearInterval(collisionTimer.current)
       playTone(soundEnabled, 280, 0.08, 0.045)
-    }, 1050)
+      playDiceImpact(soundEnabled, true)
+    }, 1200)
   }
 
   return <div className={`dice-roller ${compact ? 'compact' : ''}`}>
     <div className={`dice-stage ${rolling ? 'is-rolling' : ''}`} aria-live="polite" aria-label={result ? `Resultado ${result} no ${selectedDie}` : `Pool de ${selectedDie}`}>
       <div className="dice-floor" />
-      {dice.map((die) => <div key={die.id} className={`physics-die ${rolling ? 'physics-rolling' : ''} ${winningValue !== null && winningValue !== undefined && die.value === winningValue ? 'candidate' : ''}`} style={{ left: `${die.x}%`, animationDelay: `${die.delay}s`, '--die-rotation': `${die.rotation}deg` } as CSSProperties}><div className="die-3d"><span className="die-face die-front">{die.value}</span><span className="die-face die-top">✦</span><span className="die-face die-side">{selectedDie}</span></div></div>)}
+      {dice.map((die) => <div key={die.id} className={`physics-die die-shape-${sides} ${rolling ? 'physics-rolling' : ''} ${winningValue !== null && winningValue !== undefined && die.value === winningValue ? 'candidate' : ''}`} style={{ left: `${die.x}%`, animationDelay: `${die.delay}s`, '--die-rotation': `${die.rotation}deg` } as CSSProperties}><div className="die-3d"><span className="die-face die-front">{die.value}</span><span className="die-face die-top">✦</span><span className="die-face die-side">{selectedDie}</span></div></div>)}
       {!dice.length && <div className="dice-empty">Aguardando rolagem</div>}
     </div>
     <div className="dice-actions">
