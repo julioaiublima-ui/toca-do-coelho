@@ -107,3 +107,40 @@
   .dice-panel .dice-stage{height:300px}
   .dice-panel .die-options{grid-template-columns:repeat(4,1fr)}
 }
+
+.dice-collection{max-width:980px;margin:0 auto}
+.dice-collection-header{text-align:center;margin:0 auto 28px;color:#cbb6ff}
+.dice-collection-header>span,.dice-visual-heading>span,.dice-history .history-heading>div>span{font:10px 'DM Mono',monospace;letter-spacing:2px}
+.dice-collection-header h1{margin:10px 0 7px;color:#f5edff;font:500 clamp(36px,5vw,58px) Fraunces,serif}
+.dice-collection-header p{margin:0;color:#9e91b0;font-size:12px}
+.dice-collection .dice-workspace{gap:18px}
+.dice-collection .dice-panel{padding:0 20px 24px}
+.dice-collection .dice-stage{height:390px;border-radius:16px}
+.dice-collection .arcana-dice-canvas{min-height:390px}
+.dice-collection .dice-visual-heading{top:18px}
+.dice-collection .dice-visual-heading small{color:#c4a56e}
+.dice-collection .die-options{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px;margin-top:18px}
+.dice-collection .die-options button{min-height:64px;border:1px solid #55406f;background:#21182c;color:#eee7f5;border-radius:9px}
+.dice-collection .die-options button strong,.dice-collection .die-options button small{display:block}
+.dice-collection .die-options button strong{font:600 15px 'DM Mono',monospace}
+.dice-collection .die-options button small{margin-top:5px;color:#9c8db0;font-size:9px}
+.dice-collection .die-options button.selected{border-color:#e4bd70;background:linear-gradient(145deg,#544332,#382b26);box-shadow:0 0 0 1px #e4bd7055;color:#ffe9b0}
+.dice-collection .die-options button.selected small{color:#e2c98d}
+.roll-row{display:flex;align-items:end;gap:12px;margin-top:18px}
+.roll-row label{width:125px;color:#cbb6ff;font:10px 'DM Mono',monospace;letter-spacing:1.5px}
+.roll-row input{display:block;width:100%;margin-top:7px;padding:12px;background:#211731;border:1px solid #55406f;color:#fff;font:15px 'DM Mono',monospace}
+.dice-collection .roll-main{flex:1;margin:0;border-radius:9px;background:linear-gradient(135deg,#edcc82,#ad7b39);color:#271c25;padding:15px;font-weight:800;letter-spacing:1px}
+.sound-control{margin:14px auto 0;border:0;background:none;color:#b9a8ca;font-size:11px}
+.sound-control span{color:#d8b86c;margin-left:5px}
+.sound-control.enabled{color:#eee7f5}
+.dice-result{margin-top:18px;padding:22px;text-align:center;border:1px solid #6c5578;border-radius:12px;background:#20182a}
+.dice-result>span{display:block;color:#e4c47d;font:10px 'DM Mono',monospace;letter-spacing:2px}
+.dice-result strong{display:block;margin:10px 0 4px;color:#fff2c9;font:500 42px Fraunces,serif}
+.dice-result small{color:#a99bb5;font-size:11px}
+.dice-extra-controls{display:none}
+.dice-collection .dice-history{padding:20px;border-radius:12px}
+.dice-collection .history-heading{align-items:center}
+.dice-collection .history-heading button{border:0;background:none;color:#d8b86c;font:10px 'DM Mono',monospace;letter-spacing:1px}
+.dice-collection .history-item{border-color:#34274a}
+.dice-footer{text-align:center;color:#b9a8ca;font:11px 'DM Mono',monospace;letter-spacing:1.5px;padding:18px 0 4px}
+@media(max-width:700px){.dice-collection .die-options{grid-template-columns:repeat(4,1fr)}.dice-collection .dice-stage{height:320px}.dice-collection .arcana-dice-canvas{min-height:320px}}
