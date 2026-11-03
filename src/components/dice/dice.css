@@ -86,3 +86,24 @@
 .dice-panel .arcana-dice-canvas{position:absolute;inset:0;width:100%;height:100%;min-height:0}
 @media(max-width:850px){.dice-panel .dice-stage{height:360px}.dice-panel .arcana-dice-canvas{height:100%;min-height:0}}
 @media(max-width:520px){.dice-panel .dice-stage{height:300px}.dice-panel .arcana-dice-canvas{height:100%;min-height:0}}
+
+/* Arrange the roller like the reference: the 3D table first, controls underneath, history last. */
+.dice-workspace{display:flex;flex-direction:column;gap:22px}
+.dice-panel{width:100%;box-sizing:border-box}
+.dice-panel .dice-roller{width:100%}
+.dice-panel .dice-stage{height:420px}
+.dice-panel .dice-builder{display:flex;flex-direction:column;gap:0}
+.dice-panel .dice-builder .die-options{order:1}
+.dice-panel .dice-builder .cris-fields{order:2}
+.dice-panel .dice-builder .formula-field{order:3}
+.dice-panel .dice-builder .roll-modes{order:4}
+.dice-panel .dice-builder .roll-main{order:5}
+.dice-panel .dice-builder .roll-breakdown{order:6}
+.dice-history{order:2;width:100%;box-sizing:border-box}
+.dice-panel .die-options{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px}
+.dice-panel .die-options button{min-height:58px}
+@media(max-width:850px){.dice-panel .dice-stage{height:360px}}
+@media(max-width:520px){
+  .dice-panel .dice-stage{height:300px}
+  .dice-panel .die-options{grid-template-columns:repeat(4,1fr)}
+}
