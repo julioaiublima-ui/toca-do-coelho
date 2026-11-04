@@ -1,0 +1,570 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#17131f">
+<title>Dados do Destino — Arcana</title>
+<style>
+:root {
+  --site-primary: #8b6baf;
+  --site-secondary: #d1ad70;
+  --site-background: #17131f;
+  --site-on-primary: #ffffff;
+  --site-on-secondary: #21192a;
+  --site-on-background: #f3ecdf;
+  --site-font-body: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --site-font-heading: Georgia, "Times New Roman", serif;
+  --site-heading-scale: 1;
+  --site-spacing-scale: 1;
+  --site-radius-scale: 1;
+  --site-decoration-opacity: 1;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html { background: var(--site-background); }
+body { margin: 0; color: var(--site-on-background); background: var(--site-background); font-family: var(--site-font-body); }
+button, input, select { font: inherit; }
+button { cursor: pointer; }
+button:disabled { cursor: not-allowed; opacity: .55; }
+#app { min-height: 100vh; width: 100%; background-color: var(--site-background); color: var(--site-on-background); padding: calc(24px * var(--site-spacing-scale)); }
+.shell { width: min(1180px, 100%); margin: 0 auto; }
+.topbar { display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:20px; }
+.brand { display:flex; align-items:center; gap:12px; min-width:0; }
+.brand-mark { width:42px; height:42px; display:grid; place-items:center; border:1px solid #a88c62; border-radius:14px; color:var(--site-secondary); background:linear-gradient(145deg,#3d2c4d,#211b2a); font-size:21px; box-shadow:0 8px 30px #0005; }
+.brand h1 { margin:0; font:normal calc(25px * var(--site-heading-scale)) var(--site-font-heading); letter-spacing:.03em; }
+.brand p { margin:3px 0 0; color:#a79bad; font-size:11px; letter-spacing:.12em; text-transform:uppercase; }
+.top-actions { display:flex; gap:8px; align-items:center; }
+.ghost-btn,.subtle-btn { border:1px solid #574a63; background:#211b2a; color:#dfd3e5; border-radius:10px; padding:9px 12px; font-size:12px; }
+.ghost-btn:hover,.subtle-btn:hover { border-color:var(--site-secondary); }
+.layout { display:grid; grid-template-columns:minmax(0,1.55fr) minmax(280px,.85fr); gap:16px; align-items:start; }
+.panel { background:linear-gradient(155deg,#241d2d,#1c1824 75%); border:1px solid #51445c; border-radius:calc(16px * var(--site-radius-scale)); box-shadow:0 16px 40px #08060c45; overflow:hidden; }
+.panel-head { padding:15px 17px; border-bottom:1px solid #45384f; display:flex; justify-content:space-between; align-items:center; gap:10px; }
+.panel-head h2,.section-title { margin:0; font:normal calc(19px * var(--site-heading-scale)) var(--site-font-heading); color:#f4e5c8; }
+.kicker { color:var(--site-secondary); font-size:9px; letter-spacing:.19em; font-weight:800; text-transform:uppercase; }
+.stage-wrap { padding:14px; }
+.stage { position:relative; border-radius:13px; border:1px solid #67556e; overflow:hidden; background:radial-gradient(ellipse at 50% 44%,#51415b 0%,#30243b 46%,#1b1723 100%); }
+#diceCanvas { width:100%; height:390px; display:block; touch-action:pan-y; cursor:grab; }
+#diceCanvas.dragging { cursor:grabbing; }
+.stage-label,.stage-caption { position:absolute; pointer-events:none; font-size:9px; letter-spacing:.16em; color:#d9c8a6; text-transform:uppercase; }
+.stage-label { top:12px; left:14px; }
+.stage-caption { right:14px; bottom:12px; color:#bba781; }
+.stage-bottom { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:10px; padding-top:12px; }
+.pill { display:inline-flex; align-items:center; gap:6px; padding:6px 9px; border:1px solid #574761; border-radius:99px; color:#c8b9d3; font-size:10px; background:#211a2a; }
+.pill strong { color:#f1d69c; }
+.control-grid { display:grid; grid-template-columns:1fr auto; gap:10px; margin-top:14px; }
+.dice-quantity-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:8px; }
+.dice-type-selector { display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); gap:8px; margin:14px 0 2px; }
+.dice-type-selector button { min-width:0; min-height:65px; border:1px solid #59466b; border-radius:13px; background:#211a2b; color:#e6ddec; padding:8px 3px; display:grid; align-content:center; gap:5px; }
+.dice-type-selector button strong { font-size:clamp(12px,2vw,17px); }
+.dice-type-selector button small { color:#a99bb8; font:10px ui-monospace,monospace; }
+.dice-type-selector button.active { border-color:#d7b673; background:linear-gradient(145deg,#594431,#302437); color:#ffe4a9; box-shadow:0 0 0 1px #d7b67355,0 5px 18px #d7b67318; }
+.dice-type-selector button.active small { color:#e4c98e; }
+.die-quantity-card { border:1px solid #594a64; background:#1b1722; border-radius:10px; padding:10px; display:grid; gap:8px; }
+.die-quantity-top { display:flex; align-items:center; justify-content:space-between; gap:5px; }
+.die-quantity-name { color:#f1dfbd; font-size:12px; font-weight:850; }
+.die-quantity-shape { color:#a99caf; font-size:9px; }
+.stepper { display:grid; grid-template-columns:30px 1fr 30px; align-items:center; gap:5px; }
+.stepper button { height:29px; border:1px solid #806b52; border-radius:7px; background:#302438; color:#f0d69e; font-size:17px; line-height:1; }
+.stepper output { text-align:center; color:#fff0ca; font-size:17px; font-weight:850; font-variant-numeric:tabular-nums; }
+.selected-die-quantity { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-top:10px; padding:10px 12px; border:1px solid #594a64; border-radius:10px; background:#1b1722; }
+.selected-die-quantity-label { color:#d8c9df; font-size:11px; }
+.selected-die-stepper { display:grid; grid-template-columns:34px 42px 34px; align-items:center; gap:7px; }
+.selected-die-stepper button { height:32px; border:1px solid #806b52; border-radius:8px; background:#302438; color:#f0d69e; font-size:18px; line-height:1; }
+.selected-die-stepper output { text-align:center; color:#fff0ca; font-size:17px; font-weight:850; font-variant-numeric:tabular-nums; }
+.formula-layout { display:grid; grid-template-columns:minmax(150px,.9fr) minmax(280px,1.3fr); gap:10px; align-items:stretch; margin-top:14px; }
+.formula-box,.modifier-panel { border:1px solid #594a64; border-radius:10px; background:#1b1722; padding:10px; }
+.formula-box { display:flex; flex-direction:column; }
+.formula-box .text-input { margin-bottom:9px; color:#f2d79e; font-weight:800; }
+.formula-box .primary-btn { width:100%; flex:1; min-height:39px; }
+.modifier-title { color:#e9d9bc; font:normal 14px var(--site-font-heading); margin-bottom:8px; }
+.modifier-controls { display:grid; grid-template-columns:1.2fr .8fr .8fr; gap:7px; }
+.modifier-controls label { display:block; font-size:9px; color:#b9a9c5; margin-bottom:5px; }
+.modifier-controls input,.modifier-controls select { width:100%; min-width:0; padding:9px 7px; border:1px solid #62536d; border-radius:8px; background:#17131f; color:#f4ecdc; font-size:11px; }
+.modifier-note { color:#a99caf; font-size:9px; line-height:1.4; margin-top:7px; }
+.preset-actions { display:flex; flex-wrap:wrap; gap:6px; margin-top:9px; }
+.preset-actions .chip-btn { padding:6px 8px; }
+.field-label { display:block; color:#c4b3cf; font-size:10px; letter-spacing:.12em; text-transform:uppercase; margin-bottom:7px; }
+.text-input,.select-input { width:100%; border:1px solid #62536d; background:#17131f; color:#f4ecdc; border-radius:9px; padding:11px 12px; outline:none; }
+.text-input:focus,.select-input:focus { border-color:var(--site-secondary); box-shadow:0 0 0 3px #d1ad7020; }
+.primary-btn { border:1px solid #f1d69c; color:#241b27; background:linear-gradient(130deg,#f0dba9,#b68a4c); border-radius:10px; padding:11px 17px; font-size:11px; letter-spacing:.12em; font-weight:900; box-shadow:0 5px 22px #bd965331; }
+.primary-btn:hover { filter:brightness(1.07); }
+.quick-formulas { display:flex; flex-wrap:wrap; gap:7px; margin-top:10px; }
+.chip-btn { border:1px solid #594b64; background:#282132; color:#d9cbe0; border-radius:99px; padding:7px 10px; font-size:10px; }
+.chip-btn:hover { border-color:var(--site-secondary); color:#fff2d5; }
+.error { min-height:16px; color:#f0a4a4; font-size:11px; margin-top:6px; }
+.right-stack { display:grid; gap:16px; }
+.result-box { padding:17px; text-align:center; background:radial-gradient(ellipse at 50% 0%,#493653,#211a29 72%); }
+.result-caption { color:#d7b980; font-size:9px; letter-spacing:.2em; text-transform:uppercase; font-weight:800; }
+.result-total { font:normal 48px var(--site-font-heading); line-height:1.1; color:#fff0ca; margin:7px 0 4px; text-shadow:0 0 20px #dfc07a40; overflow-wrap:anywhere; }
+.result-sub { color:#bcaec4; font-size:11px; }
+.result-actions { display:flex; gap:7px; justify-content:center; flex-wrap:wrap; margin-top:13px; }
+.small-btn { border:1px solid #6c5a75; background:#211a29; color:#e8d9e8; border-radius:8px; padding:8px 10px; font-size:10px; }
+.breakdown { padding:14px 16px; }
+.breakdown h3 { margin:0 0 10px; font:normal 16px var(--site-font-heading); color:#f1e2c6; }
+.break-list { display:grid; gap:8px; }
+.break-row { border:1px solid #493d54; background:#1b1722; border-radius:9px; padding:9px 10px; }
+.break-top { display:flex; align-items:center; justify-content:space-between; gap:8px; font-size:11px; }
+.break-formula { color:#dfc18b; font-weight:700; }
+.break-total { color:#fff0ca; font-weight:800; }
+.die-values { display:flex; flex-wrap:wrap; gap:5px; margin-top:7px; }
+.value-token { min-width:27px; text-align:center; border-radius:6px; padding:4px 6px; border:1px solid #62516d; color:#ddd0e2; background:#33283c; font-size:10px; }
+.value-token.kept { color:#251d24; background:#e0c58e; border-color:#f1dcae; font-weight:900; }
+.value-token.dropped { opacity:.42; text-decoration:line-through; }
+.section { padding:15px 16px; }
+.section + .section { border-top:1px solid #493b53; }
+.section-head { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:11px; }
+.section-head h3 { margin:0; color:#f0e1c5; font:normal 17px var(--site-font-heading); }
+.inline-fields { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:10px; }
+.inline-fields label { font-size:9px; color:#b9a9c5; display:block; margin-bottom:5px; }
+.dice-types { display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); gap:6px; }
+.die-type { padding:8px 2px; background:#211b2a; color:#e4d7e8; border:1px solid #554760; border-radius:8px; font-size:12px; font-weight:900; }
+.die-type.selected { background:#5b4568; border-color:#d4b578; color:#fff0cb; }
+.material-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:7px; }
+.material { text-align:left; padding:8px; border:1px solid #564862; border-radius:9px; background:#1b1722; color:#e9ddeb; font-size:10px; }
+.material.active { border-color:#dfc087; box-shadow:inset 0 0 0 1px #dfc08738; }
+.swatch { display:block; height:22px; border-radius:6px; margin-bottom:6px; border:1px solid #ffffff25; }
+.range-row { display:grid; grid-template-columns:1fr auto; gap:8px; align-items:center; margin-top:10px; color:#bfb0c9; font-size:10px; }
+.range-row input { width:100%; accent-color:#d3ad70; }
+.settings-grid { display:grid; grid-template-columns:1fr 1fr; gap:9px; }
+.setting { background:#1a1621; border:1px solid #4c4056; border-radius:9px; padding:9px; }
+.setting label { display:block; color:#c6b7ce; font-size:10px; margin-bottom:6px; }
+.setting select { width:100%; padding:8px; font-size:11px; }
+.toggle-row { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:8px 0; border-bottom:1px solid #403547; color:#d8cbdc; font-size:11px; }
+.toggle-row:last-child { border-bottom:0; }
+.switch { appearance:none; width:34px; height:19px; border-radius:99px; background:#574b5f; position:relative; cursor:pointer; flex:0 0 auto; }
+.switch:checked { background:#a88a5a; }
+.switch:before { content:""; position:absolute; width:13px; height:13px; top:3px; left:3px; border-radius:50%; background:#fff; transition:transform .16s; }
+.switch:checked:before { transform:translateX(15px); }
+.history-list { display:grid; gap:7px; }
+.history-entry { border:1px solid #4c4057; background:#1a1621; border-radius:9px; padding:9px; }
+.history-summary { display:flex; align-items:center; justify-content:space-between; gap:8px; }
+.history-main { min-width:0; }
+.history-formula { color:#f1d79e; font-size:11px; font-weight:800; }
+.history-meta { color:#a99caf; font-size:9px; margin-top:3px; }
+.history-value { color:#fff0ce; font:normal 20px var(--site-font-heading); }
+.history-buttons { display:flex; gap:5px; margin-top:7px; }
+.history-buttons button { background:#292130; border:1px solid #54465e; color:#d9cbe0; border-radius:6px; font-size:9px; padding:5px 8px; }
+.empty { color:#a99caf; font-size:11px; text-align:center; padding:15px 5px; }
+.disclaimer { text-align:center; color:#887e91; font-size:10px; padding:20px 0 6px; }
+.collapsible { cursor:pointer; user-select:none; }
+.rotate-icon { color:#c6a875; transition:transform .2s; }
+details[open] .rotate-icon { transform:rotate(180deg); }
+@media (max-width:850px) { .layout { grid-template-columns:1fr; } .right-stack { grid-template-columns:1fr 1fr; } .right-stack .panel:first-child { grid-column:1/-1; } }
+@media (max-width:700px) { .formula-layout { grid-template-columns:1fr; } }
+@media (max-width:570px) { #app { padding:12px; } .topbar { align-items:flex-start; } .brand h1 { font-size:22px; } .top-actions .ghost-btn { padding:8px; font-size:10px; } #diceCanvas { height:320px; } .right-stack { grid-template-columns:1fr; } .right-stack .panel:first-child { grid-column:auto; } .control-grid { grid-template-columns:1fr; } .control-grid .primary-btn { min-height:42px; } .dice-quantity-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } .modifier-controls { grid-template-columns:1fr 1fr; } .modifier-controls > div:first-child { grid-column:1/-1; } }
+@media (prefers-reduced-motion:reduce) { *,*::before,*::after { scroll-behavior:auto!important; transition:none!important; } }
+</style>
+</head>
+<body>
+<div id="app" data-sites-preview-theme="custom">
+<div class="shell">
+  <header class="topbar">
+    <div class="brand"><div class="brand-mark">✧</div><div><h1>Dados do Destino</h1><p>Arcana · RPG Dice Engine</p></div></div>
+    <div class="top-actions"><button class="ghost-btn" id="helpBtn">Como usar</button><button class="ghost-btn" id="resetBtn">Restaurar padrão</button></div>
+  </header>
+
+  <div class="layout">
+    <main class="panel">
+      <div class="panel-head"><div><div class="kicker">Mesa de rolagem</div><h2>Role os dados</h2></div><span class="pill"><strong id="diceCountBadge">0</strong> <span id="diceCountLabel">modelos no mostruário</span></span></div>
+      <div class="stage-wrap">
+        <div class="stage">
+          <div class="stage-label">Visualização tridimensional · arraste para girar</div>
+          <canvas id="diceCanvas" aria-label="Visualização dos dados em três dimensões"></canvas>
+          <div class="stage-caption" id="stageCaption">ARCANA · DESTINO</div>
+        </div>
+        <div class="stage-bottom"><span class="pill">✦ Face final sincronizada com o resultado</span><span class="pill" id="cameraHint">Arraste · Zoom abaixo</span></div>
+        <div class="range-row"><label for="zoomRange">Zoom da mesa</label><input id="zoomRange" type="range" min="70" max="135" value="100"></div>
+        <div class="dice-type-selector" id="diceTypeSelector" aria-label="Escolher modelo de dado">
+          <button type="button" data-selected-die="d4"><strong>D4</strong><small>4 faces</small></button>
+          <button type="button" data-selected-die="d6"><strong>D6</strong><small>6 faces</small></button>
+          <button type="button" data-selected-die="d8"><strong>D8</strong><small>8 faces</small></button>
+          <button type="button" data-selected-die="d10"><strong>D10</strong><small>10 faces</small></button>
+          <button type="button" data-selected-die="d12"><strong>D12</strong><small>12 faces</small></button>
+          <button type="button" data-selected-die="d20" class="active"><strong>D20</strong><small>20 faces</small></button>
+          <button type="button" data-selected-die="d100"><strong>D%</strong><small>Percentual</small></button>
+        </div>
+        <div class="selected-die-quantity">
+          <span class="selected-die-quantity-label" id="selectedDieLabel">Quantidade de D20</span>
+          <div class="selected-die-stepper"><button type="button" class="quantity-change" id="decreaseSelectedDie" aria-label="Diminuir quantidade">−</button><output id="selectedDieCount">1</output><button type="button" class="quantity-change" id="increaseSelectedDie" aria-label="Aumentar quantidade">+</button></div>
+        </div>
+
+        <div class="formula-layout">
+          <div class="formula-box">
+            <label class="field-label" for="formulaInput">Fórmula montada</label>
+            <input class="text-input" id="formulaInput" value="1d20" readonly aria-label="Fórmula montada automaticamente">
+            <button class="primary-btn" id="rollBtn">✦ ROLAR DADOS</button>
+          </div>
+          <div class="modifier-panel">
+            <div class="modifier-title">Modificadores da rolagem</div>
+            <div class="modifier-controls">
+              <div><label for="poolModifier">Regra dos dados</label><select id="poolModifier"><option value="none">Normal · somar todos</option><option value="adv">Vantagem · D20 maior</option><option value="dis">Desvantagem · D20 menor</option><option value="kh">Manter maiores</option><option value="kl">Manter menores</option><option value="dl">Descartar menores</option><option value="dh">Descartar maiores</option></select></div>
+              <div><label for="modifierCount">Quantidade</label><input id="modifierCount" type="number" min="1" max="19" value="1"></div>
+              <div><label for="rollBonus">Bônus / penalidade</label><input id="rollBonus" type="number" min="-999" max="999" value="0"></div>
+            </div>
+            <div class="modifier-note" id="modifierNote">Escolha quantos dados de cada tipo quer rolar. A fórmula será atualizada automaticamente.</div>
+            <div class="preset-actions"><button class="chip-btn" id="presetAdvantage">Vantagem</button><button class="chip-btn" id="presetDisadvantage">Desvantagem</button><button class="chip-btn" id="resetModifiers">Limpar modificadores</button></div>
+          </div>
+        </div>
+        <div class="error" id="formulaError" aria-live="polite"></div>
+      </div>
+    </main>
+
+    <aside class="right-stack">
+      <section class="panel">
+        <div class="result-box"><div class="result-caption">Resultado da rolagem</div><div class="result-total" id="resultTotal">—</div><div class="result-sub" id="resultSub">Aguardando sua rolagem</div><div class="result-actions"><button class="small-btn" id="copyResult">Copiar resultado</button><button class="small-btn" id="repeatResult" disabled>Repetir</button></div></div>
+        <div class="breakdown"><h3>Detalhamento</h3><div class="break-list" id="breakdownList"><div class="empty">Os dados individuais aparecerão aqui.</div></div></div>
+      </section>
+
+      <section class="panel">
+        <div class="section">
+          <div class="section-head"><h3>Aparência dos dados</h3><span class="kicker">Personalize</span></div>
+          <div class="material-grid" id="materials">
+            <button class="material active" data-material="pearl"><span class="swatch" style="background:linear-gradient(135deg,#fff3d7,#a98d69)"></span>Marfim perolado</button>
+            <button class="material" data-material="obsidian"><span class="swatch" style="background:linear-gradient(135deg,#46424e,#09090d)"></span>Obsidiana</button>
+            <button class="material" data-material="amethyst"><span class="swatch" style="background:linear-gradient(135deg,#dbb5f2,#503276)"></span>Ametista</button>
+            <button class="material" data-material="emerald"><span class="swatch" style="background:linear-gradient(135deg,#a9e5bb,#14513a)"></span>Esmeralda</button>
+            <button class="material" data-material="gold"><span class="swatch" style="background:linear-gradient(135deg,#fff0a8,#96621d)"></span>Ouro antigo</button>
+            <button class="material" data-material="crystal"><span class="swatch" style="background:linear-gradient(135deg,#e6f6ff,#769eb9)"></span>Cristal</button>
+          </div>
+          <div class="inline-fields">
+            <div><label for="numberColor">Cor dos números</label><select class="select-input" id="numberColor"><option value="dark">Preto</option><option value="light">Marfim</option><option value="gold">Dourado</option><option value="violet">Violeta</option></select></div>
+            <div><label for="edgeColor">Bordas</label><select class="select-input" id="edgeColor"><option value="gold">Ouro</option><option value="silver">Prata</option><option value="dark">Escuras</option></select></div>
+          </div>
+          <div class="range-row"><label for="glowRange">Intensidade do brilho</label><input id="glowRange" type="range" min="0" max="100" value="38"></div>
+        </div>
+        <div class="section">
+          <div class="section-head"><h3>Configurações avançadas</h3><span class="kicker">Controles</span></div>
+          <div class="toggle-row"><span>Animação de rolagem</span><input class="switch" type="checkbox" id="animationToggle" checked></div>
+          <div class="toggle-row"><span>Efeitos sonoros</span><input class="switch" type="checkbox" id="soundToggle" checked></div>
+          <div class="toggle-row"><span>Mostrar números individuais</span><input class="switch" type="checkbox" id="numbersToggle" checked></div>
+          <div class="settings-grid" style="margin-top:10px">
+            <div class="setting"><label for="speedSelect">Velocidade</label><select class="select-input" id="speedSelect"><option value="1.35">Rápida</option><option value="1" selected>Normal</option><option value=".72">Lenta</option></select></div>
+            <div class="setting"><label for="volumeRange">Volume <span id="volumeLabel">65%</span></label><input id="volumeRange" type="range" min="0" max="100" value="65" style="width:100%;accent-color:#d1ad70"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="section">
+          <div class="section-head"><h3>Histórico</h3><button class="subtle-btn" id="clearHistory">Limpar</button></div>
+          <div class="history-list" id="historyList"><div class="empty">Nenhuma rolagem realizada.</div></div>
+        </div>
+      </section>
+    </aside>
+  </div>
+  <footer class="disclaimer">DADOS DO DESTINO · QUE OS DADOS SEJAM FAVORÁVEIS</footer>
+</div>
+</div>
+<script>
+(() => {
+'use strict';
+const $ = id => document.getElementById(id);
+const canvas = $('diceCanvas');
+const ctx = canvas.getContext('2d');
+const TAU = Math.PI * 2;
+const PHI = (1 + Math.sqrt(5)) / 2;
+const EPS = 1e-5;
+const add = (a,b) => a.map((v,i)=>v+b[i]);
+const sub = (a,b) => a.map((v,i)=>v-b[i]);
+const mul = (a,s) => a.map(v=>v*s);
+const dot = (a,b) => a.reduce((s,v,i)=>s+v*b[i],0);
+const cross = (a,b) => [a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]];
+const mag = a => Math.hypot(...a);
+const norm = a => mul(a,1/(mag(a)||1));
+
+function icosahedron() {
+  const v=[];
+  for(const a of [-1,1]) for(const b of [-1,1]) v.push([0,a,b*PHI],[a,b*PHI,0],[a*PHI,0,b]);
+  return v;
+}
+function trapezohedron() {
+  const h=.11, c=Math.cos(Math.PI/5), tip=h*(1+c)/(1-c), v=[[0,0,tip],[0,0,-tip]];
+  for(let i=0;i<5;i++){ const a=TAU*i/5,b=a+Math.PI/5; v.push([Math.cos(a),Math.sin(a),h],[Math.cos(b),Math.sin(b),-h]); }
+  return v;
+}
+function chamferedCube() {
+  const v=[];
+  for(const p of [[1,1,.58],[1,.58,1],[.58,1,1]]) for(const x of [-1,1]) for(const y of [-1,1]) for(const z of [-1,1]) v.push([x*p[0],y*p[1],z*p[2]]);
+  return v;
+}
+function supportPlanes(vertices) {
+  const center=vertices.reduce((a,v)=>add(a,v),[0,0,0]).map(x=>x/vertices.length), planes=[],seen=new Set();
+  for(let i=0;i<vertices.length;i++) for(let j=i+1;j<vertices.length;j++) for(let k=j+1;k<vertices.length;k++) {
+    let n=norm(cross(sub(vertices[j],vertices[i]),sub(vertices[k],vertices[i]))); if(mag(n)<EPS) continue;
+    let d=-dot(n,vertices[i]), ds=vertices.map(v=>dot(n,v)+d);
+    if(ds.some(x=>x>EPS)&&ds.some(x=>x<-EPS)) continue;
+    if(dot(n,center)+d>0){n=mul(n,-1);d=-d;}
+    const key=[...n,d].map(x=>Math.round(x*1e4)).join(',');
+    if(!seen.has(key)){seen.add(key);planes.push({n,d});}
+  }
+  return planes;
+}
+function hullFaces(vertices) {
+  const center=vertices.reduce((a,v)=>add(a,v),[0,0,0]).map(v=>v/vertices.length), faces=[], seen=new Set();
+  for(let i=0;i<vertices.length;i++) for(let j=i+1;j<vertices.length;j++) for(let k=j+1;k<vertices.length;k++) {
+    let n=norm(cross(sub(vertices[j],vertices[i]),sub(vertices[k],vertices[i]))); if(mag(n)<EPS) continue;
+    const ds=vertices.map(v=>dot(n,sub(v,vertices[i]))); if(ds.some(x=>x>EPS)&&ds.some(x=>x<-EPS)) continue;
+    const ids=ds.map((x,id)=>Math.abs(x)<EPS?id:-1).filter(x=>x>=0); if(ids.length<3) continue;
+    const key=ids.slice().sort((a,b)=>a-b).join(','); if(seen.has(key)) continue; seen.add(key);
+    const fc=ids.reduce((a,id)=>add(a,vertices[id]),[0,0,0]).map(x=>x/ids.length); if(dot(n,sub(fc,center))<0)n=mul(n,-1);
+    const u=norm(sub(vertices[ids[0]],fc)),v=cross(n,u);
+    ids.sort((a,b)=>{const pa=sub(vertices[a],fc),pb=sub(vertices[b],fc);return Math.atan2(dot(pa,v),dot(pa,u))-Math.atan2(dot(pb,v),dot(pb,u));});
+    faces.push({ids,normal:n,center:fc});
+  }
+  return faces;
+}
+const ICO=icosahedron();
+const SHAPES={
+ d4:{name:'D4 · Tetraedro',sides:4,values:[1,2,3,4],vertices:[[1,1,1],[-1,-1,1],[-1,1,-1],[1,-1,-1]]},
+ d6:{name:'D6 · Cubo chanfrado',sides:6,values:[1,2,3,4,5,6],vertices:chamferedCube()},
+ d8:{name:'D8 · Octaedro',sides:8,values:[1,2,3,4,5,6,7,8],vertices:[[1,0,0],[-1,0,0],[0,1,0],[0,-1,0],[0,0,1],[0,0,-1]]},
+ d10:{name:'D10 · Trapezoedro',sides:10,values:[1,2,3,4,5,6,7,8,9,10],vertices:trapezohedron()},
+ d100:{name:'D% · Percentual',sides:10,values:[10,20,30,40,50,60,70,80,90,100],vertices:trapezohedron()},
+ d12:{name:'D12 · Dodecaedro',sides:12,values:Array.from({length:12},(_,i)=>i+1),vertices:supportPlanes(ICO).map(p=>mul(p.n,1/(-p.d)))},
+ d20:{name:'D20 · Icosaedro',sides:20,values:Array.from({length:20},(_,i)=>i+1),vertices:ICO}
+};
+const FACE_ORDER={
+ d4:[1,2,3,4],d6:[1,2,3,4,5,6],d8:[1,2,3,4,5,6,7,8],
+ d10:[1,2,3,4,5,6,7,8,9,10],d100:[10,20,30,40,50,60,70,80,90,100],
+ d12:[1,2,3,4,5,6,7,8,9,10,11,12],d20:Array.from({length:20},(_,i)=>i+1)
+};
+function geometryFor(key) {
+  const shape=SHAPES[key], scale=1.35/Math.max(...shape.vertices.map(mag)), vertices=shape.vertices.map(v=>mul(v,scale)), faces=hullFaces(vertices);
+  if(key==='d6') {
+    const directions=[{v:[0,0,1],n:1},{v:[0,0,-1],n:6},{v:[1,0,0],n:2},{v:[-1,0,0],n:5},{v:[0,1,0],n:3},{v:[0,-1,0],n:4}];
+    const main=faces.filter(f=>f.ids.length===8);
+    main.forEach(f=>{f.value=directions.slice().sort((a,b)=>dot(f.normal,b.v)-dot(f.normal,a.v))[0].n;});
+  } else {
+    const sorted=faces.slice().sort((a,b)=>a.normal[2]-b.normal[2]||a.normal[1]-b.normal[1]||a.normal[0]-b.normal[0]);
+    sorted.forEach((f,i)=>f.value=FACE_ORDER[key][i]??null);
+  }
+  faces.forEach(f=>{f.u=norm(sub(vertices[f.ids[0]],f.center));f.v=norm(cross(f.u,f.normal));f.radius=f.ids.reduce((s,id)=>s+mag(sub(vertices[id],f.center)),0)/f.ids.length;});
+  return {vertices,faces};
+}
+const GEOMETRIES=Object.fromEntries(Object.keys(SHAPES).map(k=>[k,geometryFor(k)]));
+
+function qAxis(axis,angle){const a=norm(axis),s=Math.sin(angle/2);return [a[0]*s,a[1]*s,a[2]*s,Math.cos(angle/2)];}
+function qMul(a,b){return [a[3]*b[0]+a[0]*b[3]+a[1]*b[2]-a[2]*b[1],a[3]*b[1]-a[0]*b[2]+a[1]*b[3]+a[2]*b[0],a[3]*b[2]+a[0]*b[1]-a[1]*b[0]+a[2]*b[3],a[3]*b[3]-a[0]*b[0]-a[1]*b[1]-a[2]*b[2]];}
+function qRotate(q,v){const u=q.slice(0,3),s=q[3];return add(add(mul(u,2*dot(u,v)),mul(v,s*s-dot(u,u))),mul(cross(u,v),2*s));}
+function qFromTo(a,b){const x=norm(a),y=norm(b),d=dot(x,y);if(d<-.99999){let ax=cross(x,[1,0,0]);if(mag(ax)<.01)ax=cross(x,[0,1,0]);return qAxis(ax,Math.PI);}const c=cross(x,y),q=[c[0],c[1],c[2],1+d],m=mag(q);return q.map(v=>v/m);}
+function qSlerp(a,b,t){let cos=a.reduce((s,v,i)=>s+v*b[i],0),end=b;if(cos<0){cos=-cos;end=b.map(v=>-v);}if(cos>.9995)return norm(a.map((v,i)=>v+(end[i]-v)*t));const th=Math.acos(Math.min(1,cos)),sn=Math.sin(th);return norm(a.map((v,i)=>v*Math.sin((1-t)*th)/sn+end[i]*Math.sin(t*th)/sn));}
+
+// Dice notation parser: NdM, modifiers kh/kl/dh/dl, signed bonuses and mixed dice.
+function parseFormula(input) {
+  const text=input.replace(/\s+/g,'').toLowerCase();
+  if(!text) throw new Error('Digite uma fórmula, como 1d20+5.');
+  const re=/([+-]?)(?:(\d*)d(\d+)(?:(kh|kl|dh|dl)(\d+))?|([0-9]+))/gy;
+  const terms=[];let pos=0,totalDice=0;
+  while(pos<text.length) {
+    re.lastIndex=pos;const m=re.exec(text);
+    if(!m) throw new Error(`Não consegui interpretar a fórmula perto de "${text.slice(pos)}".`);
+    if(pos===0&&m[1]==='-'){} else if(pos===0&&m[1]==='+'){}
+    const sign=m[1]==='-'?-1:1;
+    if(m[3]) {
+      const count=m[2]===''?1:Number(m[2]),sides=Number(m[3]),modifier=m[4]||null,modCount=m[5]?Number(m[5]):null;
+      if(count<1||count>20) throw new Error('Cada grupo deve ter entre 1 e 20 dados.');
+      if(![4,6,8,10,12,20,100].includes(sides)) throw new Error(`D${sides} não está disponível.`);
+      if(modifier&&(!modCount||modCount>count)) throw new Error('O número do modificador deve estar entre 1 e a quantidade de dados.');
+      totalDice+=count;if(totalDice>24)throw new Error('A rolagem pode ter no máximo 24 dados visíveis.');
+      terms.push({kind:'dice',count,sides,modifier,modCount,sign});
+    } else {
+      terms.push({kind:'constant',value:Number(m[6]),sign});
+    }
+    pos=re.lastIndex;
+  }
+  return terms;
+}
+function dieKey(sides){return sides===100?'d100':`d${sides}`;}
+function dieLabel(sides,value){return sides===100&&value===100?'00':String(value);}
+function applyModifier(values,modifier,modCount) {
+  const kept=new Set(values.map((_,i)=>i));
+  if(!modifier)return kept;
+  const sorted=values.map((v,i)=>({v,i})).sort((a,b)=>a.v-b.v||a.i-b.i);
+  if(modifier==='kh')sorted.slice(0,values.length-modCount).forEach(x=>kept.delete(x.i));
+  if(modifier==='kl')sorted.slice(modCount).forEach(x=>kept.delete(x.i));
+  if(modifier==='dh')sorted.slice(values.length-modCount).forEach(x=>kept.delete(x.i));
+  if(modifier==='dl')sorted.slice(0,modCount).forEach(x=>kept.delete(x.i));
+  return kept;
+}
+function formatTerm(t){if(t.kind==='constant')return `${t.sign<0?'-':'+'}${t.value}`;return `${t.sign<0?'-':'+'}${t.count}d${t.sides}${t.modifier? t.modifier+t.modCount:''}`;}
+function evaluateTerms(terms) {
+  let total=0;const groups=[],visual=[];
+  terms.forEach((term,ti)=>{
+    if(term.kind==='constant'){const signed=term.sign*term.value;total+=signed;groups.push({label:`Modificador ${signed>=0?'+':''}${signed}`,sum:signed,constant:true});return;}
+    const available=SHAPES[dieKey(term.sides)].values;
+    const values=Array.from({length:term.count},()=>available[Math.floor(Math.random()*available.length)]);
+    const kept=applyModifier(values,term.modifier,term.modCount);
+    const subtotal=values.reduce((s,v,i)=>s+(kept.has(i)?v:0),0),signed=subtotal*term.sign;total+=signed;
+    const group={label:`${term.count}d${term.sides}${term.modifier?term.modifier+term.modCount:''}`,values,kept,subtotal,signed,sign:term.sign,termIndex:ti};groups.push(group);
+    values.forEach((value,i)=>visual.push({key:dieKey(term.sides),value,kept:kept.has(i),termIndex:ti,ordinal:i}));
+  });
+  return {total,groups,visual};
+}
+
+const materialPalettes={
+ pearl:{base:[241,226,194],light:[255,248,226],dark:[157,126,88],edge:'#a58a5a'},
+ obsidian:{base:[68,62,78],light:[139,128,158],dark:[12,10,18],edge:'#a99bb9'},
+ amethyst:{base:[156,111,194],light:[231,190,249],dark:[63,37,91],edge:'#d8b3ef'},
+ emerald:{base:[66,151,111],light:[175,230,188],dark:[15,65,47],edge:'#addaba'},
+ gold:{base:[196,145,55],light:[255,225,140],dark:[100,58,15],edge:'#f2d27d'},
+ crystal:{base:[169,211,226],light:[239,251,255],dark:[67,111,143],edge:'#d9f3ff'}
+};
+let currentMaterial='pearl',numberColor='dark',edgeColor='gold',glow=38,zoom=1;
+let dice=[],history=[],lastRoll=null,isRolling=false,animationFrame=null;
+const DIE_ORDER=['d4','d6','d8','d10','d100','d12','d20'];
+const DIE_NAMES={d4:'D4',d6:'D6',d8:'D8',d10:'D10',d100:'D%',d12:'D12',d20:'D20'};
+let selectedDieType='d20';
+let dieCounts={d4:0,d6:0,d8:0,d10:0,d100:0,d12:0,d20:1};
+let cameraRotation=qAxis([1,.3,.2],.5),dragState=null;
+let audioContext=null,noiseBuffer=null;
+const settings={animation:true,sound:true,numbers:true,speed:1,volume:.65};
+function resizeCanvas(){const r=canvas.getBoundingClientRect(),dpr=Math.min(window.devicePixelRatio||1,2);canvas.width=Math.round(r.width*dpr);canvas.height=Math.round(r.height*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);drawScene();}
+function layoutDice(w,h,count){const out=[];const cols=count<=3?count:count<=8?4:5;const rows=Math.ceil(count/cols);const size=Math.min(h/(rows*2.85),w/(cols*2.85))*zoom;for(let i=0;i<count;i++){const row=Math.floor(i/cols),col=i%cols,rowCount=Math.min(cols,count-row*cols);const cellW=w/rowCount;out.push({x:cellW*(col+.5),y:h*(row+.5)/rows,unit:size});}return out;}
+function project(point,rotation,cx,cy,unit){const p=qRotate(rotation,point),perspective=4.15/(4.15-p[2]);return{x:cx+p[0]*unit*perspective,y:cy-p[1]*unit*perspective,z:p[2]};}
+function currentNumberFill(){return ({dark:'#17131c',light:'#fff5df',gold:'#8b5d19',violet:'#47245f'})[numberColor]||'#17131c';}
+function edgeStroke(){return ({gold:'#b89a66',silver:'#c6cbd2',dark:'#29232e'})[edgeColor]||'#b89a66';}
+function drawOneDie(die,layout){
+ const geom=GEOMETRIES[die.key],pal=materialPalettes[currentMaterial],{x:cx,y:baseY,unit}=layout,cy=baseY-(die.bounce||0),proj=v=>project(v,die.rotation,cx,cy,unit);
+ const shadow=ctx.createRadialGradient(cx,cy+unit*.74,1,cx,cy+unit*.74,unit*.8);shadow.addColorStop(0,'#08060baa');shadow.addColorStop(1,'#08060b00');ctx.fillStyle=shadow;ctx.beginPath();ctx.ellipse(cx,cy+unit*.73,unit*.76,unit*.2,0,0,TAU);ctx.fill();
+ const projected=geom.vertices.map(proj),visible=geom.faces.map(f=>({...f,normal:qRotate(die.rotation,f.normal),z:qRotate(die.rotation,f.center)[2]})).filter(f=>f.normal[2]>.008).sort((a,b)=>a.z-b.z);
+ visible.forEach(face=>{
+  const pts=face.ids.map(id=>projected[id]);if(pts.length<3)return;
+  const light=Math.max(.18,Math.min(1,.48+face.normal[0]*.2+face.normal[1]*.22+face.normal[2]*.32));
+  const mix=(a,b,t)=>a.map((v,i)=>Math.round(v+(b[i]-v)*t));
+  const mid=mix(pal.base,pal.light,Math.min(.74,light*.55+(face.z+1.3)*.09));
+  const dark=mix(pal.dark,pal.base,Math.min(.68,light*.45));
+  const c1=`rgb(${mid.join(',')})`,c2=`rgb(${dark.join(',')})`;
+  const grad=ctx.createLinearGradient(pts[0].x,pts[0].y,pts[Math.floor(pts.length/2)].x,pts[Math.floor(pts.length/2)].y);grad.addColorStop(0,c1);grad.addColorStop(1,c2);
+  ctx.beginPath();pts.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));ctx.closePath();ctx.fillStyle=grad;ctx.fill();ctx.lineWidth=Math.max(1,unit*.015);ctx.strokeStyle=edgeStroke();ctx.stroke();
+  if(glow>0){ctx.save();ctx.globalAlpha=glow/400;ctx.shadowColor=pal.light.join(',');ctx.shadowBlur=glow*.22;ctx.strokeStyle=pal.light.length?`rgb(${pal.light.join(',')})`:'#fff';ctx.stroke();ctx.restore();}
+  if(settings.numbers&&face.value!==null&&face.value!==undefined){
+   const delta=.075,pc=proj(face.center),pu=proj(add(face.center,mul(face.u,delta))),pv=proj(add(face.center,mul(face.v,delta)));
+   const ux=(pu.x-pc.x)/delta,uy=(pu.y-pc.y)/delta,vx=(pv.x-pc.x)/delta,vy=(pv.y-pc.y)/delta;
+   const size=Math.min(.39,Math.max(.19,face.radius*.68));ctx.save();ctx.translate(pc.x,pc.y);ctx.transform(ux,uy,vx,vy,0,0);ctx.font=`900 ${size}px Georgia,serif`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.lineJoin='round';ctx.lineWidth=.025;ctx.strokeStyle=currentMaterial==='obsidian'?'#e9e1f2':'#fff8e8';ctx.strokeText(dieLabel(die.key,face.value),0,0);ctx.fillStyle=currentNumberFill();ctx.fillText(dieLabel(die.key,face.value),0,0);ctx.restore();
+  }
+ });
+}
+function drawScene(){const w=canvas.clientWidth,h=canvas.clientHeight;if(!w||!h)return;ctx.clearRect(0,0,w,h);if(!dice.length){ctx.fillStyle='#c7b9d0';ctx.font='14px system-ui';ctx.textAlign='center';ctx.fillText('Escolha a quantidade de dados abaixo',w/2,h/2);return;}const layouts=layoutDice(w,h,dice.length);dice.forEach((d,i)=>drawOneDie(d,layouts[i]));const selected=selectedDiceTotal();$('diceCountBadge').textContent=String(selected||DIE_ORDER.length);$('diceCountLabel').textContent=selected?'dados selecionados':'modelos no mostruário';}
+function startOrientation(die,index){const a=norm([Math.random()-.5,Math.random()-.5,Math.random()-.5]);return qMul(qAxis(a,Math.random()*TAU),qAxis([0,1,0],index*.41));}
+function makeDie(item,index){const geom=GEOMETRIES[item.key],face=geom.faces.find(f=>f.value===item.value);const target=face?qAxis([0,0,1],Math.random()*TAU):qAxis([0,0,1],0);const alignment=face?qFromTo(face.normal,[0,0,1]):qAxis([0,0,1],0);const end=qMul(target,alignment);return{...item,rotation:startOrientation(item,index),start:null,end,spin:norm([Math.random()-.5,Math.random()-.5,Math.random()-.5]),bounce:0,offset:{x:(Math.random()-.5)*18,y:(Math.random()-.5)*12}};}
+function buildVisualDice(evaluation){return evaluation.visual.map((item,i)=>makeDie(item,i));}
+
+function selectedDiceTotal(){return DIE_ORDER.reduce((sum,key)=>sum+dieCounts[key],0);}
+function renderDieQuantityControls(){
+ const key=selectedDieType;
+ $('selectedDieLabel').textContent=`Quantidade de ${DIE_NAMES[key]}`;
+ $('selectedDieCount').textContent=String(dieCounts[key]);
+ $('decreaseSelectedDie').disabled=dieCounts[key]===0;
+ $('increaseSelectedDie').disabled=selectedDiceTotal()>=24||dieCounts[key]>=20;
+}
+function changeDieCount(key,delta){
+ if(isRolling)return;
+ const next=dieCounts[key]+delta;
+ if(next<0||next>20||selectedDiceTotal()+delta>24)return;
+ dieCounts[key]=next;
+ refreshDiceBuilder();
+}
+function buildFormulaFromControls(){
+ const mode=$('poolModifier').value;
+ const keepCount=Math.max(1,Math.min(19,Number($('modifierCount').value)||1));
+ $('modifierCount').value=keepCount;
+ const parts=[];
+ DIE_ORDER.forEach(key=>{
+  const count=dieCounts[key];if(!count)return;
+  let suffix='';
+  if(key==='d20'&&mode==='adv')suffix='kh1';
+  else if(key==='d20'&&mode==='dis')suffix='kl1';
+  else if(['kh','kl','dh','dl'].includes(mode)&&count>keepCount)suffix=mode+keepCount;
+  parts.push(`${count}${key}${suffix}`);
+ });
+ const bonus=Number($('rollBonus').value)||0;
+ let formula=parts.join('+');
+ if(bonus>0)formula+=(formula?'+':'')+bonus;
+ if(bonus<0)formula+=String(bonus);
+ $('formulaInput').value=formula;
+ let note='A fórmula acompanha as quantidades selecionadas.';
+ if(mode==='adv'||mode==='dis')note='Vantagem/desvantagem aplica-se aos D20. O sistema mantém o maior ou o menor entre eles.';
+ else if(['kh','kl','dh','dl'].includes(mode))note='A regra é aplicada separadamente a cada tipo de dado que tenha quantidade suficiente.';
+ $('modifierNote').textContent=note;
+ return formula;
+}
+function updateDicePreview(){
+ if(isRolling)return;
+ const preview=[];
+ const key=selectedDieType,values=SHAPES[key].values;
+ const quantity=dieCounts[key]||1;
+ for(let i=0;i<quantity;i++){
+  const value=values[(i*3+1)%values.length];
+  const die=makeDie({key,value,kept:true},preview.length);
+  die.rotation=die.end;die.bounce=0;preview.push(die);
+ }
+ dice=preview;
+ $('stageCaption').textContent=`MODELO ATUAL · ${DIE_NAMES[key]}${dieCounts[key]?' · '+dieCounts[key]+' NA QUANTIDADE':' · AMOSTRA'}`;
+ drawScene();
+}
+function refreshDiceBuilder(){
+ const mode=$('poolModifier').value;
+ let modifierError='';
+ if((mode==='adv'||mode==='dis')&&dieCounts.d20<2){
+ modifierError='Vantagem e desvantagem precisam de pelo menos 2 D20. Adicione os dados manualmente.';
+ }
+ renderDieQuantityControls();
+ const formula=buildFormulaFromControls();
+ $('formulaError').textContent=modifierError||(selectedDiceTotal()>24?'Selecione no máximo 24 dados.':'');
+ $('rollBtn').disabled=selectedDiceTotal()===0||selectedDiceTotal()>24||Boolean(modifierError);
+ $('resultTotal').textContent='—';
+ $('resultSub').textContent=formula?`${formula} · prévia dos dados, ainda sem rolagem`:'Escolha pelo menos um dado para começar.';
+ $('breakdownList').innerHTML='<div class="empty">O detalhamento aparecerá depois da rolagem.</div>';
+ $('repeatResult').disabled=true;lastRoll=null;
+ updateDicePreview();
+}
+function applyPreset(mode){
+ $('poolModifier').value=mode;
+ renderDieQuantityControls();refreshDiceBuilder();
+}
+
+function prepareAudio(){const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return null;if(!audioContext){audioContext=new AC();const len=Math.floor(audioContext.sampleRate*.22);noiseBuffer=audioContext.createBuffer(1,len,audioContext.sampleRate);const channel=noiseBuffer.getChannelData(0);for(let i=0;i<len;i++)channel[i]=(Math.random()*2-1)*Math.pow(1-i/len,1.7);}if(audioContext.state==='suspended')audioContext.resume();return audioContext;}
+function soundImpact(ac,when,volume,frequency,pan){const source=ac.createBufferSource();source.buffer=noiseBuffer;const filter=ac.createBiquadFilter();filter.type='bandpass';filter.frequency.setValueAtTime(frequency,when);filter.Q.value=1.2;const gain=ac.createGain();gain.gain.setValueAtTime(.0001,when);gain.gain.exponentialRampToValueAtTime(Math.max(.001,volume),when+.004);gain.gain.exponentialRampToValueAtTime(.0001,when+.085);source.connect(filter);filter.connect(gain);if(ac.createStereoPanner){const p=ac.createStereoPanner();p.pan.setValueAtTime(pan,when);gain.connect(p);p.connect(ac.destination);}else gain.connect(ac.destination);source.start(when);source.stop(when+.09);}
+function playRollSound(count){if(!settings.sound||settings.volume<=0)return;const ac=prepareAudio();if(!ac||!noiseBuffer)return;const start=ac.currentTime+.02,vol=settings.volume;const rumble=ac.createBufferSource();rumble.buffer=noiseBuffer;rumble.loop=true;const filter=ac.createBiquadFilter();filter.type='lowpass';filter.frequency.value=300;const gain=ac.createGain();gain.gain.setValueAtTime(.0001,start);gain.gain.exponentialRampToValueAtTime(.03*vol,start+.12);gain.gain.exponentialRampToValueAtTime(.0001,start+1.82);rumble.connect(filter);filter.connect(gain);gain.connect(ac.destination);rumble.start(start);rumble.stop(start+1.9);for(let i=0;i<Math.min(85,12+count*8);i++){soundImpact(ac,start+.04+Math.random()*1.68,(.016+Math.random()*.025)*vol*(1+count*.035),650+Math.random()*3000,Math.random()*1.7-.85);}const osc=ac.createOscillator(),og=ac.createGain();osc.type='sine';osc.frequency.setValueAtTime(112,start+1.75);osc.frequency.exponentialRampToValueAtTime(48,start+1.98);og.gain.setValueAtTime(.0001,start+1.75);og.gain.exponentialRampToValueAtTime(.13*vol,start+1.78);og.gain.exponentialRampToValueAtTime(.0001,start+2.08);osc.connect(og);og.connect(ac.destination);osc.start(start+1.75);osc.stop(start+2.1);soundImpact(ac,start+1.8,.055*vol,440,-.1);}
+
+let lastEvaluation=null,lastFormula='';
+function runFormula(formula,meta={}){
+  if(isRolling)return;let terms;
+  try{terms=parseFormula(formula);}catch(error){$('formulaError').textContent=error.message;return;}
+  $('formulaError').textContent='';const evaluation=evaluateTerms(terms);lastEvaluation=evaluation;lastFormula=formula;
+  const duration=settings.animation?2100/settings.speed:0;
+  if(settings.animation){dice=buildVisualDice(evaluation);dice.forEach(d=>d.start=d.rotation.slice());isRolling=true;setControlsDisabled(true);playRollSound(dice.length);$('resultTotal').textContent='✧';$('resultSub').textContent='Os dados estão rolando...';const start=performance.now();const animate=now=>{const t=Math.min(1,(now-start)/duration),ease=1-Math.pow(1-t,3);dice.forEach((d,i)=>{const base=qSlerp(d.start,d.end,ease);d.rotation=qMul(base,qAxis(d.spin,(1-ease)*TAU*4));d.bounce=t<1?Math.abs(Math.sin(t*Math.PI*7+i*.73))*(1-t)*18:0;d.offset.x*=.992;d.offset.y*=.992;});drawScene();if(t<1)animationFrame=requestAnimationFrame(animate);else{dice.forEach(d=>{d.rotation=d.end;d.bounce=0;});drawScene();finishRoll(evaluation,formula,meta);}};animationFrame=requestAnimationFrame(animate);
+  } else {dice=buildVisualDice(evaluation);dice.forEach(d=>d.rotation=d.end);drawScene();finishRoll(evaluation,formula,meta);}
+}
+function setControlsDisabled(disabled){$('rollBtn').disabled=disabled;document.querySelectorAll('.quantity-change,#poolModifier,#modifierCount,#rollBonus,#presetAdvantage,#presetDisadvantage,#resetModifiers').forEach(el=>el.disabled=disabled);}
+function finishRoll(evaluation,formula,meta){isRolling=false;setControlsDisabled(false);$('resultTotal').textContent=String(evaluation.total);$('resultSub').textContent=`${formula} · ${evaluation.visual.length} dado(s) · ${meta.label||'Rolagem personalizada'}`;renderBreakdown(evaluation);$('repeatResult').disabled=false;lastRoll={formula,meta:{...meta},evaluation};const entry={id:Date.now()+Math.random(),formula,total:evaluation.total,groups:evaluation.groups,visual:evaluation.visual,meta:meta.label||'Rolagem personalizada',time:new Date()};history.unshift(entry);history=history.slice(0,20);renderHistory();}
+function renderBreakdown(evaluation){const box=$('breakdownList');box.innerHTML='';evaluation.groups.forEach(group=>{const row=document.createElement('div');row.className='break-row';const top=document.createElement('div');top.className='break-top';const formula=document.createElement('span');formula.className='break-formula';formula.textContent=group.label;const subtotal=document.createElement('span');subtotal.className='break-total';const signed=group.constant?group.sum:group.signed;subtotal.textContent=`${signed>=0?'+':''}${signed}`;top.append(formula,subtotal);row.append(top);if(!group.constant){const vals=document.createElement('div');vals.className='die-values';group.values.forEach((v,i)=>{const token=document.createElement('span');token.className='value-token '+(group.kept.has(i)?'kept':'dropped');token.textContent=String(v);token.title=group.kept.has(i)?'Mantido':'Descartado';vals.append(token);});row.append(vals);}box.append(row);});}
+function renderHistory(){const box=$('historyList');box.innerHTML='';if(!history.length){box.innerHTML='<div class="empty">Nenhuma rolagem realizada.</div>';return;}history.forEach(entry=>{const card=document.createElement('div');card.className='history-entry';const summary=document.createElement('div');summary.className='history-summary';const main=document.createElement('div');main.className='history-main';const formula=document.createElement('div');formula.className='history-formula';formula.textContent=entry.formula;const meta=document.createElement('div');meta.className='history-meta';meta.textContent=`${entry.meta} · ${entry.time.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}`;main.append(formula,meta);const value=document.createElement('div');value.className='history-value';value.textContent=String(entry.total);summary.append(main,value);card.append(summary);const buttons=document.createElement('div');buttons.className='history-buttons';const repeat=document.createElement('button');repeat.textContent='Repetir';repeat.addEventListener('click',()=>{$('formulaInput').value=entry.formula;runFormula(entry.formula,{label:'Repetição do histórico'});});const details=document.createElement('button');details.textContent='Ver detalhes';details.addEventListener('click',()=>{lastEvaluation={total:entry.total,groups:entry.groups,visual:entry.visual};$('resultTotal').textContent=String(entry.total);$('resultSub').textContent=`${entry.formula} · Registro anterior`;renderBreakdown(lastEvaluation);});buttons.append(repeat,details);card.append(buttons);box.append(card);});}
+function copyResult(){if(!lastRoll)return;const e=lastRoll.evaluation;const text=`${lastRoll.formula} = ${e.total}\n${e.groups.map(g=>`${g.label}: ${g.constant?g.signed:g.values.map((v,i)=>g.kept.has(i)?`[${v}]`:v).join(', ')} => ${g.signed}`).join('\n')}`;if(navigator.clipboard?.writeText){navigator.clipboard.writeText(text).then(()=>{$('copyResult').textContent='Copiado!';setTimeout(()=>$('copyResult').textContent='Copiar resultado',1300);}).catch(()=>window.prompt('Copie o resultado:',text));}else window.prompt('Copie o resultado:',text);}
+
+
+function bindEvents(){
+ document.querySelectorAll('[data-selected-die]').forEach(button=>button.addEventListener('click',()=>{selectedDieType=button.dataset.selectedDie;document.querySelectorAll('[data-selected-die]').forEach(item=>item.classList.toggle('active',item===button));renderDieQuantityControls();updateDicePreview();}));
+ $('decreaseSelectedDie').addEventListener('click',()=>changeDieCount(selectedDieType,-1));
+ $('increaseSelectedDie').addEventListener('click',()=>changeDieCount(selectedDieType,1));
+ $('rollBtn').addEventListener('click',()=>runFormula($('formulaInput').value));$('formulaInput').addEventListener('keydown',e=>{if(e.key==='Enter')runFormula($('formulaInput').value);});
+ $('poolModifier').addEventListener('change',refreshDiceBuilder);
+ $('modifierCount').addEventListener('change',refreshDiceBuilder);$('rollBonus').addEventListener('input',refreshDiceBuilder);
+ $('presetAdvantage').addEventListener('click',()=>applyPreset('adv'));$('presetDisadvantage').addEventListener('click',()=>applyPreset('dis'));$('resetModifiers').addEventListener('click',()=>{$('poolModifier').value='none';$('modifierCount').value='1';$('rollBonus').value='0';refreshDiceBuilder();});
+ $('copyResult').addEventListener('click',copyResult);$('repeatResult').addEventListener('click',()=>{if(lastRoll){$('formulaInput').value=lastRoll.formula;runFormula(lastRoll.formula,{label:'Repetição'});}});$('clearHistory').addEventListener('click',()=>{history=[];renderHistory();});
+ document.querySelectorAll('[data-material]').forEach(b=>b.addEventListener('click',()=>{currentMaterial=b.dataset.material;document.querySelectorAll('[data-material]').forEach(x=>x.classList.toggle('active',x===b));drawScene();}));
+ $('numberColor').addEventListener('change',e=>{numberColor=e.target.value;drawScene();});$('edgeColor').addEventListener('change',e=>{edgeColor=e.target.value;drawScene();});$('glowRange').addEventListener('input',e=>{glow=Number(e.target.value);drawScene();});$('zoomRange').addEventListener('input',e=>{zoom=Number(e.target.value)/100;drawScene();});
+ $('animationToggle').addEventListener('change',e=>settings.animation=e.target.checked);$('soundToggle').addEventListener('change',e=>settings.sound=e.target.checked);$('numbersToggle').addEventListener('change',e=>{settings.numbers=e.target.checked;drawScene();});$('speedSelect').addEventListener('change',e=>settings.speed=Number(e.target.value));$('volumeRange').addEventListener('input',e=>{settings.volume=Number(e.target.value)/100;$('volumeLabel').textContent=e.target.value+'%';});
+ $('resetBtn').addEventListener('click',()=>{currentMaterial='pearl';numberColor='dark';edgeColor='gold';glow=38;zoom=1;settings.animation=true;settings.sound=true;settings.numbers=true;settings.speed=1;settings.volume=.65;dieCounts={d4:0,d6:0,d8:0,d10:0,d100:0,d12:0,d20:1};$('poolModifier').value='none';$('modifierCount').value='1';$('rollBonus').value='0';document.querySelector('[data-material="pearl"]').click();$('numberColor').value='dark';$('edgeColor').value='gold';$('glowRange').value='38';$('zoomRange').value='100';$('animationToggle').checked=true;$('soundToggle').checked=true;$('numbersToggle').checked=true;$('speedSelect').value='1';$('volumeRange').value='65';$('volumeLabel').textContent='65%';refreshDiceBuilder();drawScene();});
+ $('helpBtn').addEventListener('click',()=>alert('Escolha a quantidade de cada tipo de dado nos controles + e −. A fórmula é montada automaticamente.\n\nModificadores: Vantagem e desvantagem aplicam-se aos D20; Manter/descartar atua separadamente em cada grupo. O campo Bônus/penalidade aceita valores positivos e negativos.\n\nArraste a mesa para mudar a orientação e use o controle de zoom.'));
+ canvas.addEventListener('pointerdown',e=>{if(isRolling)return;dragState={x:e.clientX,y:e.clientY,rotation:cameraRotation};canvas.setPointerCapture(e.pointerId);canvas.classList.add('dragging');});
+ canvas.addEventListener('pointermove',e=>{if(!dragState||isRolling)return;const dx=e.clientX-dragState.x,dy=e.clientY-dragState.y;const qx=qAxis([0,1,0],dx*.008),qy=qAxis([1,0,0],dy*.008);const change=qMul(qx,qy);dice.forEach(d=>d.rotation=qMul(change,d.rotation));drawScene();});
+ const endDrag=()=>{dragState=null;canvas.classList.remove('dragging');};canvas.addEventListener('pointerup',endDrag);canvas.addEventListener('pointercancel',endDrag);
+}
+function initial(){renderDieQuantityControls();refreshDiceBuilder();bindEvents();resizeCanvas();if(window.ResizeObserver)new ResizeObserver(resizeCanvas).observe(canvas);else window.addEventListener('resize',resizeCanvas);}
+initial();
+})();
+</script>
+</body>
+</html>
