@@ -108,6 +108,23 @@
   .dice-panel .die-options{grid-template-columns:repeat(4,1fr)}
 }
 
+/* Final layout pass: the visual stage is compact and configuration stays readable below it. */
+.dice-panel .dice-stage{height:300px;border-radius:12px}
+.dice-panel .arcana-dice-canvas{min-height:300px}
+.dice-panel .dice-visual-heading{height:auto;top:auto;padding:20px 0 12px;pointer-events:auto}
+.dice-panel .dice-visual-heading span{color:#cbb6ff}
+.dice-panel .dice-visual-heading small{color:#c4a56e}
+.dice-config-heading{display:flex;align-items:center;justify-content:space-between;border-top:1px solid #34274a;padding:20px 0 12px;color:#cbb6ff;font:10px 'DM Mono',monospace;letter-spacing:1.6px}
+.dice-config-heading small{color:#c4a56e;font-size:8px;letter-spacing:1px}
+.dice-panel .dice-builder{margin-top:0}
+.dice-panel .roll-row{margin-top:16px}
+.dice-panel .roll-main{position:static;transform:none;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dice-result{margin-top:22px}
+.result-table{display:grid;grid-template-columns:1fr auto;gap:0;border-top:1px solid #34274a;margin-top:12px;text-align:left}
+.result-table span,.result-table b{padding:10px 0;border-bottom:1px solid #34274a;font-size:11px}
+.result-table span{color:#a99bb5}.result-table b{color:#f1d98c;font-family:'DM Mono',monospace;font-weight:500}
+@media(max-width:520px){.dice-panel .dice-stage{height:260px}.dice-panel .arcana-dice-canvas{min-height:260px}.dice-panel .roll-row{display:flex;flex-direction:column;align-items:stretch}.dice-panel .roll-main{width:100%}}
+
 .dice-collection{max-width:980px;margin:0 auto}
 .dice-collection-header{text-align:center;margin:0 auto 28px;color:#cbb6ff}
 .dice-collection-header>span,.dice-visual-heading>span,.dice-history .history-heading>div>span{font:10px 'DM Mono',monospace;letter-spacing:2px}
